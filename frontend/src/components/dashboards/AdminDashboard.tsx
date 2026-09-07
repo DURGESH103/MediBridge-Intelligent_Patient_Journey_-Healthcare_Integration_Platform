@@ -5,6 +5,7 @@ import { listDepartments, listDoctors } from '@/lib/api/doctors';
 import { listUsers } from '@/lib/api/auth';
 import { getApiErrorMessage } from '@/lib/api/client';
 import { StatCard } from '@/components/ui/StatCard';
+import { LoadingSpinner } from '@/components/ui/LoadingSpinner';
 import { ErrorState } from '@/components/ui/ErrorState';
 
 export function AdminDashboard() {
@@ -14,6 +15,8 @@ export function AdminDashboard() {
 
   const firstError = departmentsQuery.error ?? doctorsQuery.error ?? usersQuery.error;
   if (firstError) return <ErrorState message={getApiErrorMessage(firstError)} />;
+
+  if (departmentsQuery.isLoading || doctorsQuery.isLoading || usersQuery.isLoading) return <LoadingSpinner />;
 
   const staffCount = (usersQuery.data ?? []).filter((u) => u.role !== 'PATIENT').length;
   const patientCount = (usersQuery.data ?? []).filter((u) => u.role === 'PATIENT').length;

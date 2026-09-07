@@ -1,8 +1,7 @@
 'use client';
 
 import { useEffect, useState } from 'react';
-import Link from 'next/link';
-import { useParams } from 'next/navigation';
+import { useParams, useRouter } from 'next/navigation';
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
@@ -30,6 +29,7 @@ function PatientDetailPageContent() {
   const { id } = useParams<{ id: string }>();
   const patientId = Number(id);
   const { user } = useAuth();
+  const router = useRouter();
   const [apiError, setApiError] = useState<string | null>(null);
   const [successMessage, setSuccessMessage] = useState<string | null>(null);
   const queryClient = useQueryClient();
@@ -104,9 +104,9 @@ function PatientDetailPageContent() {
         description={`Patient code ${patientQuery.data.patientCode}`}
         action={
           user?.role === 'RECEPTIONIST' && (
-            <Link href={`/appointments/book?patientId=${patientQuery.data.id}`}>
-              <Button>Book Appointment</Button>
-            </Link>
+            <Button onClick={() => router.push(`/appointments/book?patientId=${patientQuery.data!.id}`)}>
+              Book Appointment
+            </Button>
           )
         }
       />

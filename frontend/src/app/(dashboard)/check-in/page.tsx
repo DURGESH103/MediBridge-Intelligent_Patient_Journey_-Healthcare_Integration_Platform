@@ -76,6 +76,7 @@ function CheckInPageContent() {
       {!selectedPatient && (
         <Card>
           <Input
+            aria-label="Search for a patient"
             placeholder="Search by name, phone, or patient code…"
             value={searchInput}
             onChange={(e) => setSearchInput(e.target.value)}

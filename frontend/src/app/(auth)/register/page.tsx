@@ -43,7 +43,7 @@ export default function RegisterPage() {
         <Input label="Email" type="email" autoComplete="email" error={errors.email?.message} {...register('email')} />
         <Input label="Phone number" type="tel" error={errors.phone?.message} {...register('phone')} />
 
-        <div className="grid grid-cols-2 gap-3">
+        <div className="grid grid-cols-1 gap-3 sm:grid-cols-2">
           <Input label="Date of birth" type="date" error={errors.dateOfBirth?.message} {...register('dateOfBirth')} />
           <div className="flex flex-col gap-1">
             <label htmlFor="gender" className="text-sm font-medium text-slate-700">

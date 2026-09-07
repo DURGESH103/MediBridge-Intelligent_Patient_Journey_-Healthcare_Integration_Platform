@@ -1,6 +1,7 @@
 'use client';
 
 import Link from 'next/link';
+import { useRouter } from 'next/navigation';
 import { useQuery } from '@tanstack/react-query';
 import { getMyCurrentJourney } from '@/lib/api/journey';
 import { listAppointments } from '@/lib/api/appointments';
@@ -17,6 +18,7 @@ import { JourneyChecklist } from '@/components/journey/JourneyChecklist';
 import { Button } from '@/components/ui/Button';
 
 export function PatientDashboard() {
+  const router = useRouter();
   const journeyQuery = useQuery({
     queryKey: ['journey', 'me'],
     queryFn: getMyCurrentJourney,
@@ -65,9 +67,9 @@ export function PatientDashboard() {
               title="No upcoming appointments"
               description="Book an appointment to get started."
               action={
-                <Link href="/appointments">
-                  <Button size="sm">Book Appointment</Button>
-                </Link>
+                <Button size="sm" onClick={() => router.push('/appointments')}>
+                  Book Appointment
+                </Button>
               }
             />
           )}

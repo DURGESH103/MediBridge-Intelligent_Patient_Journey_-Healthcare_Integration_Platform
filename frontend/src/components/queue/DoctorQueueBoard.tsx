@@ -78,7 +78,7 @@ export function DoctorQueueBoard({ doctorId }: { doctorId: number }) {
         {entries.length > 0 && (
           <ul className="mt-3 divide-y divide-slate-100">
             {entries.map((entry) => (
-              <li key={entry.id} className="flex items-center justify-between py-3">
+              <li key={entry.id} className="flex flex-wrap items-center justify-between gap-3 py-3">
                 <div>
                   <p className="text-sm font-medium text-slate-900">
                     Token #{entry.tokenNumber}
@@ -86,7 +86,7 @@ export function DoctorQueueBoard({ doctorId }: { doctorId: number }) {
                   </p>
                   <p className="text-xs text-slate-500">Checked in {formatTime(entry.checkedInAt)}</p>
                 </div>
-                <div className="flex items-center gap-3">
+                <div className="flex flex-wrap items-center gap-3">
                   <StatusBadge {...queueStatusStyle(entry.status)} />
                   {entry.status === 'IN_PROGRESS' && (
                     <>

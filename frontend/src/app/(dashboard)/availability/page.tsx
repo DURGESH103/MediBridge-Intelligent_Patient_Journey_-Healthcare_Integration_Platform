@@ -118,16 +118,19 @@ function AvailabilityPageContent() {
                 <div className="flex flex-wrap items-center gap-3">
                   <input
                     type="time"
+                    aria-label={`${day} start time`}
                     className="rounded-md border border-slate-300 px-2 py-1.5 text-sm"
                     {...register(`slots.${index}.startTime`)}
                   />
                   <span className="text-sm text-slate-400">to</span>
                   <input
                     type="time"
+                    aria-label={`${day} end time`}
                     className="rounded-md border border-slate-300 px-2 py-1.5 text-sm"
                     {...register(`slots.${index}.endTime`)}
                   />
                   <select
+                    aria-label={`${day} slot duration`}
                     className="rounded-md border border-slate-300 px-2 py-1.5 text-sm"
                     {...register(`slots.${index}.slotDurationMinutes`)}
                   >

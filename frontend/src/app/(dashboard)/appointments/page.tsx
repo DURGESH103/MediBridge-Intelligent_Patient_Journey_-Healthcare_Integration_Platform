@@ -2,6 +2,7 @@
 
 import { useState } from 'react';
 import Link from 'next/link';
+import { useRouter } from 'next/navigation';
 import { useQuery } from '@tanstack/react-query';
 import { useAuth } from '@/lib/auth/AuthContext';
 import { listAppointments } from '@/lib/api/appointments';
@@ -28,6 +29,7 @@ export default function AppointmentsPage() {
 
 function AppointmentsPageContent() {
   const { user } = useAuth();
+  const router = useRouter();
   const isStaff = user?.role === 'RECEPTIONIST';
   const [dateFilter, setDateFilter] = useState(todayDateString());
 
@@ -47,9 +49,7 @@ function AppointmentsPageContent() {
         title="Appointments"
         description={isStaff ? 'View and manage appointments by date.' : 'Your upcoming and past appointments.'}
         action={
-          <Link href="/appointments/book">
-            <Button>Book Appointment</Button>
-          </Link>
+          <Button onClick={() => router.push('/appointments/book')}>Book Appointment</Button>
         }
       />
 

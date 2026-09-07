@@ -36,12 +36,12 @@ export function Header({ onMenuClick }: { onMenuClick: () => void }) {
         </div>
 
         {user && (
-          <div className="flex items-center gap-3">
-            <div className="hidden text-right sm:block">
-              <p className="text-sm font-medium text-slate-900">{user.email}</p>
+          <div className="flex min-w-0 items-center gap-3">
+            <div className="hidden max-w-48 text-right sm:block">
+              <p className="truncate text-sm font-medium text-slate-900">{user.email}</p>
               <p className="text-xs text-slate-500">{formatRole(user.role)}</p>
             </div>
-            <Button variant="outline" size="sm" onClick={handleLogout}>
+            <Button variant="outline" size="sm" className="shrink-0" onClick={handleLogout}>
               Log out
             </Button>
           </div>

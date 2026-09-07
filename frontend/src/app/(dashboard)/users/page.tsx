@@ -115,12 +115,12 @@ function StaffUsersPageContent() {
         {staffUsers.length > 0 && (
           <ul className="divide-y divide-slate-100">
             {staffUsers.map((user) => (
-              <li key={user.id} className="flex items-center justify-between py-3">
-                <div>
-                  <p className="text-sm font-medium text-slate-900">{user.email}</p>
+              <li key={user.id} className="flex items-center justify-between gap-3 py-3">
+                <div className="min-w-0">
+                  <p className="truncate text-sm font-medium text-slate-900">{user.email}</p>
                   <p className="text-xs text-slate-500">{formatRole(user.role)}</p>
                 </div>
-                <div className="flex items-center gap-3">
+                <div className="flex shrink-0 items-center gap-3">
                   <StatusBadge label={user.isActive ? 'Active' : 'Inactive'} tone={user.isActive ? 'success' : 'neutral'} />
                   <Button
                     variant="outline"

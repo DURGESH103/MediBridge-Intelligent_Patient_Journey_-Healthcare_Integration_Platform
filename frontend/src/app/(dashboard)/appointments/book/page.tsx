@@ -104,6 +104,7 @@ function BookAppointmentPageContent() {
             <h2 className="text-sm font-semibold text-slate-900">1. Select Patient</h2>
             <Input
               className="mt-3"
+              aria-label="Search for a patient"
               placeholder="Search by name, phone, or patient code…"
               value={patientSearch}
               onChange={(e) => setPatientSearch(e.target.value)}
