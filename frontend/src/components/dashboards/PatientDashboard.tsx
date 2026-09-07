@@ -15,6 +15,7 @@ import { ErrorState } from '@/components/ui/ErrorState';
 import { EmptyState } from '@/components/ui/EmptyState';
 import { StatusBadge } from '@/components/ui/StatusBadge';
 import { JourneyChecklist } from '@/components/journey/JourneyChecklist';
+import { QueueStatusCard } from './QueueStatusCard';
 import { Button } from '@/components/ui/Button';
 
 export function PatientDashboard() {
@@ -58,6 +59,8 @@ export function PatientDashboard() {
       </Card>
 
       <div className="flex flex-col gap-6">
+        <QueueStatusCard />
+
         <Card>
           <h2 className="text-base font-semibold text-slate-900">Upcoming Appointment</h2>
           {appointmentsQuery.isLoading && <LoadingSpinner />}

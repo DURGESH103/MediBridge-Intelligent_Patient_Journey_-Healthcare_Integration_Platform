@@ -1,10 +1,7 @@
 'use client';
 
-import { useQuery } from '@tanstack/react-query';
-import { listAppointments } from '@/lib/api/appointments';
-import { getQueueEntryByAppointment, getQueueEntryStatus } from '@/lib/api/queue';
 import { getApiErrorMessage } from '@/lib/api/client';
-import { useQueueRealtime } from '@/lib/socket/useQueueRealtime';
+import { useMyQueueStatus } from '@/lib/queue/useMyQueueStatus';
 import { Card } from '@/components/ui/Card';
 import { LoadingSpinner } from '@/components/ui/LoadingSpinner';
 import { ErrorState } from '@/components/ui/ErrorState';
@@ -12,22 +9,7 @@ import { EmptyState } from '@/components/ui/EmptyState';
 import { BigStat } from './BigStat';
 
 export function PatientQueuePanel() {
-  const appointmentsQuery = useQuery({ queryKey: ['appointments', 'me'], queryFn: () => listAppointments() });
-  const checkedInAppointment = appointmentsQuery.data?.find((a) => a.status === 'CHECKED_IN');
-
-  const entryQuery = useQuery({
-    queryKey: ['queue', 'entry', 'byAppointment', checkedInAppointment?.id],
-    queryFn: () => getQueueEntryByAppointment(checkedInAppointment!.id),
-    enabled: Boolean(checkedInAppointment),
-  });
-
-  const statusQuery = useQuery({
-    queryKey: ['queue', 'status', entryQuery.data?.id],
-    queryFn: () => getQueueEntryStatus(entryQuery.data!.id),
-    enabled: Boolean(entryQuery.data),
-  });
-
-  useQueueRealtime(entryQuery.data?.doctorId);
+  const { appointmentsQuery, checkedInAppointment, entryQuery, statusQuery } = useMyQueueStatus();
 
   if (appointmentsQuery.isLoading) return <LoadingSpinner />;
   if (appointmentsQuery.isError) return <ErrorState message={getApiErrorMessage(appointmentsQuery.error)} />;

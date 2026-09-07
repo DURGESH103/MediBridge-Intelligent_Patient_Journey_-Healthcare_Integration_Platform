@@ -3,6 +3,7 @@
 import { useEffect, useState } from 'react';
 import { useRouter } from 'next/navigation';
 import { useAuth } from '@/lib/auth/AuthContext';
+import { useNotificationsRealtime } from '@/lib/socket/useNotificationsRealtime';
 import { LoadingSpinner } from '@/components/ui/LoadingSpinner';
 import { Header } from '@/components/layout/Header';
 import { AppSidebar } from '@/components/layout/AppSidebar';
@@ -12,6 +13,11 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
   const { user, status } = useAuth();
   const router = useRouter();
   const [isMobileNavOpen, setIsMobileNavOpen] = useState(false);
+
+  // Active for every authenticated page, not just /notifications, so the
+  // dashboard's "Recent Notifications" card and any other consumer of
+  // notification queries also update live.
+  useNotificationsRealtime();
 
   useEffect(() => {
     if (status === 'unauthenticated') {
