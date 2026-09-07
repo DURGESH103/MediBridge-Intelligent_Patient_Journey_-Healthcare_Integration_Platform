@@ -1,0 +1,216 @@
+{
+  "info": {
+    "name": "MediBridge API",
+    "description": "Intelligent Patient Journey & Healthcare Integration Platform",
+    "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+  },
+  "variable": [
+    { "key": "baseUrl", "value": "http://localhost:5000/api/v1" },
+    { "key": "accessToken", "value": "" },
+    { "key": "doctorId", "value": "1" },
+    { "key": "patientId", "value": "1" },
+    { "key": "appointmentId", "value": "1" },
+    { "key": "consultationId", "value": "1" }
+  ],
+  "auth": {
+    "type": "bearer",
+    "bearer": [{ "key": "token", "value": "{{accessToken}}", "type": "string" }]
+  },
+  "item": [
+    {
+      "name": "Auth",
+      "item": [
+        {
+          "name": "Register (Patient)",
+          "request": {
+            "method": "POST",
+            "header": [{ "key": "Content-Type", "value": "application/json" }],
+            "url": "{{baseUrl}}/auth/register",
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"email\": \"jane.doe@example.com\",\n  \"password\": \"Passw0rd123\",\n  \"fullName\": \"Jane Doe\",\n  \"dateOfBirth\": \"1990-05-15\",\n  \"gender\": \"FEMALE\",\n  \"phone\": \"+919876543210\"\n}"
+            }
+          }
+        },
+        {
+          "name": "Login",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "const data = pm.response.json().data;",
+                  "if (data && data.accessToken) { pm.collectionVariables.set('accessToken', data.accessToken); }"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [{ "key": "Content-Type", "value": "application/json" }],
+            "url": "{{baseUrl}}/auth/login",
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"email\": \"jane.doe@example.com\",\n  \"password\": \"Passw0rd123\"\n}"
+            }
+          }
+        },
+        {
+          "name": "Refresh Token",
+          "request": { "method": "POST", "url": "{{baseUrl}}/auth/refresh" }
+        },
+        {
+          "name": "Logout",
+          "request": { "method": "POST", "url": "{{baseUrl}}/auth/logout" }
+        }
+      ]
+    },
+    {
+      "name": "Patients",
+      "item": [
+        { "name": "Get My Profile", "request": { "method": "GET", "url": "{{baseUrl}}/patients/me" } },
+        {
+          "name": "Register Walk-In Patient",
+          "request": {
+            "method": "POST",
+            "header": [{ "key": "Content-Type", "value": "application/json" }],
+            "url": "{{baseUrl}}/patients",
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"fullName\": \"Walk In Patient\",\n  \"dateOfBirth\": \"1975-11-02\",\n  \"gender\": \"MALE\",\n  \"phone\": \"+919000011122\"\n}"
+            }
+          }
+        },
+        { "name": "Search Patients", "request": { "method": "GET", "url": "{{baseUrl}}/patients/search?q=Jane" } },
+        { "name": "Get Patient By Id", "request": { "method": "GET", "url": "{{baseUrl}}/patients/{{patientId}}" } }
+      ]
+    },
+    {
+      "name": "Doctors & Departments",
+      "item": [
+        {
+          "name": "Create Department",
+          "request": {
+            "method": "POST",
+            "header": [{ "key": "Content-Type", "value": "application/json" }],
+            "url": "{{baseUrl}}/departments",
+            "body": { "mode": "raw", "raw": "{\n  \"name\": \"Cardiology\",\n  \"description\": \"Heart care\"\n}" }
+          }
+        },
+        { "name": "List Departments", "request": { "method": "GET", "url": "{{baseUrl}}/departments" } },
+        {
+          "name": "Register Doctor",
+          "request": {
+            "method": "POST",
+            "header": [{ "key": "Content-Type", "value": "application/json" }],
+            "url": "{{baseUrl}}/doctors",
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"email\": \"dr.patel@medibridge.local\",\n  \"password\": \"DoctorPass123\",\n  \"departmentId\": 1,\n  \"fullName\": \"Dr. Anjali Patel\",\n  \"specialization\": \"Cardiologist\",\n  \"averageConsultationMinutes\": 15\n}"
+            }
+          }
+        },
+        { "name": "List Doctors", "request": { "method": "GET", "url": "{{baseUrl}}/doctors" } },
+        {
+          "name": "Set Doctor Availability",
+          "request": {
+            "method": "PUT",
+            "header": [{ "key": "Content-Type", "value": "application/json" }],
+            "url": "{{baseUrl}}/doctors/{{doctorId}}/availability",
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"slots\": [\n    { \"dayOfWeek\": 1, \"startTime\": \"09:00\", \"endTime\": \"17:00\", \"slotDurationMinutes\": 15 }\n  ]\n}"
+            }
+          }
+        }
+      ]
+    },
+    {
+      "name": "Appointments",
+      "item": [
+        {
+          "name": "Available Slots",
+          "request": { "method": "GET", "url": "{{baseUrl}}/appointments/available-slots?doctorId={{doctorId}}&date=2026-09-08" }
+        },
+        {
+          "name": "Book Appointment",
+          "request": {
+            "method": "POST",
+            "header": [{ "key": "Content-Type", "value": "application/json" }],
+            "url": "{{baseUrl}}/appointments",
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"doctorId\": {{doctorId}},\n  \"scheduledAt\": \"2026-09-08T09:00:00Z\",\n  \"reason\": \"Checkup\"\n}"
+            }
+          }
+        },
+        { "name": "List My Appointments", "request": { "method": "GET", "url": "{{baseUrl}}/appointments" } },
+        {
+          "name": "Cancel Appointment",
+          "request": { "method": "PATCH", "url": "{{baseUrl}}/appointments/{{appointmentId}}/cancel" }
+        }
+      ]
+    },
+    {
+      "name": "Queue",
+      "item": [
+        {
+          "name": "Check In",
+          "request": {
+            "method": "POST",
+            "header": [{ "key": "Content-Type", "value": "application/json" }],
+            "url": "{{baseUrl}}/queue/check-in",
+            "body": { "mode": "raw", "raw": "{\n  \"appointmentId\": {{appointmentId}}\n}" }
+          }
+        },
+        { "name": "Queue Summary", "request": { "method": "GET", "url": "{{baseUrl}}/queue/doctors/{{doctorId}}/summary" } },
+        { "name": "Call Next Patient", "request": { "method": "PATCH", "url": "{{baseUrl}}/queue/doctors/{{doctorId}}/call-next" } }
+      ]
+    },
+    {
+      "name": "Consultations & Laboratory",
+      "item": [
+        {
+          "name": "Start Consultation",
+          "request": {
+            "method": "POST",
+            "header": [{ "key": "Content-Type", "value": "application/json" }],
+            "url": "{{baseUrl}}/consultations",
+            "body": { "mode": "raw", "raw": "{\n  \"appointmentId\": {{appointmentId}}\n}" }
+          }
+        },
+        {
+          "name": "Add Prescription",
+          "request": {
+            "method": "POST",
+            "header": [{ "key": "Content-Type", "value": "application/json" }],
+            "url": "{{baseUrl}}/consultations/{{consultationId}}/prescriptions",
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"medicineName\": \"Aspirin\",\n  \"dosage\": \"75mg\",\n  \"frequency\": \"Once daily\"\n}"
+            }
+          }
+        },
+        {
+          "name": "Request Lab Test",
+          "request": {
+            "method": "POST",
+            "header": [{ "key": "Content-Type", "value": "application/json" }],
+            "url": "{{baseUrl}}/consultations/{{consultationId}}/lab-tests",
+            "body": { "mode": "raw", "raw": "{\n  \"testName\": \"Lipid Profile\"\n}" }
+          }
+        },
+        { "name": "Complete Consultation", "request": { "method": "PATCH", "url": "{{baseUrl}}/consultations/{{consultationId}}/complete" } },
+        { "name": "Pending Lab Work", "request": { "method": "GET", "url": "{{baseUrl}}/laboratory/pending" } }
+      ]
+    },
+    {
+      "name": "Journey & Notifications",
+      "item": [
+        { "name": "My Current Journey", "request": { "method": "GET", "url": "{{baseUrl}}/journeys/me" } },
+        { "name": "Journey For Appointment", "request": { "method": "GET", "url": "{{baseUrl}}/journeys/appointments/{{appointmentId}}" } },
+        { "name": "My Notifications", "request": { "method": "GET", "url": "{{baseUrl}}/notifications" } }
+      ]
+    }
+  ]
+}

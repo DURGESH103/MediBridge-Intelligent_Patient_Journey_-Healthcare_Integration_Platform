@@ -1,0 +1,20 @@
+CREATE TABLE queue_entries (
+  id INT AUTO_INCREMENT PRIMARY KEY,
+  appointment_id INT NOT NULL,
+  patient_id INT NOT NULL,
+  doctor_id INT NOT NULL,
+  queue_date DATE NOT NULL,
+  token_number INT NOT NULL,
+  status ENUM('WAITING', 'IN_PROGRESS', 'COMPLETED', 'SKIPPED', 'CANCELLED') NOT NULL DEFAULT 'WAITING',
+  checked_in_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
+  called_at TIMESTAMP NULL DEFAULT NULL,
+  completed_at TIMESTAMP NULL DEFAULT NULL,
+  created_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
+  updated_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+  UNIQUE KEY uq_queue_entries_appointment (appointment_id),
+  UNIQUE KEY uq_queue_entries_doctor_date_token (doctor_id, queue_date, token_number),
+  KEY idx_queue_entries_doctor_date_status (doctor_id, queue_date, status),
+  CONSTRAINT fk_queue_entries_appointment FOREIGN KEY (appointment_id) REFERENCES appointments (id),
+  CONSTRAINT fk_queue_entries_patient FOREIGN KEY (patient_id) REFERENCES patients (id),
+  CONSTRAINT fk_queue_entries_doctor FOREIGN KEY (doctor_id) REFERENCES doctors (id)
+) ENGINE = InnoDB;
