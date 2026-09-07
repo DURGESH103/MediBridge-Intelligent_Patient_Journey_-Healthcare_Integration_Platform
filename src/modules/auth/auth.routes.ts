@@ -4,13 +4,14 @@ import { authController } from './auth.controller';
 import { validate } from '../../middleware/validate';
 import { authenticate } from '../../middleware/authenticate';
 import { loginSchema, refreshSchema, registerSchema } from './auth.validation';
+import { env } from '../../config/env';
 
 const router = Router();
 
 // Login is a common brute-force target; keep it tighter than the global API rate limit.
 const loginLimiter = rateLimit({
   windowMs: 15 * 60 * 1000,
-  max: 10,
+  max: env.rateLimit.loginMaxRequests,
   standardHeaders: true,
   legacyHeaders: false,
   message: { success: false, message: 'Too many login attempts, please try again later', errors: [] },

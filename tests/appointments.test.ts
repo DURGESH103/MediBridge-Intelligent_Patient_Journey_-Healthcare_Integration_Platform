@@ -91,6 +91,55 @@ describe('Appointments', () => {
     expect(bookedSlot.available).toBe(false);
   });
 
+  it('records a journey event when an appointment is confirmed', async () => {
+    const { doctor, date } = await setupDoctorWithFullDayAvailability();
+    const patient = await registerPatient();
+    const receptionist = await createStaffUser(UserRole.RECEPTIONIST);
+
+    const booking = await request(app)
+      .post('/api/v1/appointments')
+      .set('Authorization', `Bearer ${patient.token}`)
+      .send({ doctorId: doctor.doctorId, scheduledAt: `${date}T14:00:00Z` });
+    const appointmentId = booking.body.data.id;
+
+    const confirm = await request(app)
+      .patch(`/api/v1/appointments/${appointmentId}/confirm`)
+      .set('Authorization', `Bearer ${receptionist.token}`);
+    expect(confirm.status).toBe(200);
+    expect(confirm.body.data.status).toBe('CONFIRMED');
+
+    const me = await request(app).get('/api/v1/patients/me').set('Authorization', `Bearer ${patient.token}`);
+    const timeline = await request(app)
+      .get(`/api/v1/journeys/patients/${me.body.data.id}/timeline`)
+      .set('Authorization', `Bearer ${patient.token}`);
+    const eventTypes = timeline.body.data.map((e: { eventType: string }) => e.eventType);
+    expect(eventTypes).toContain('APPOINTMENT_CONFIRMED');
+  });
+
+  it('records a journey event when an appointment is marked as a no-show', async () => {
+    const { doctor, date } = await setupDoctorWithFullDayAvailability();
+    const patient = await registerPatient();
+
+    const booking = await request(app)
+      .post('/api/v1/appointments')
+      .set('Authorization', `Bearer ${patient.token}`)
+      .send({ doctorId: doctor.doctorId, scheduledAt: `${date}T15:00:00Z` });
+    const appointmentId = booking.body.data.id;
+
+    const noShow = await request(app)
+      .patch(`/api/v1/appointments/${appointmentId}/no-show`)
+      .set('Authorization', `Bearer ${doctor.token}`);
+    expect(noShow.status).toBe(200);
+    expect(noShow.body.data.status).toBe('NO_SHOW');
+
+    const me = await request(app).get('/api/v1/patients/me').set('Authorization', `Bearer ${patient.token}`);
+    const timeline = await request(app)
+      .get(`/api/v1/journeys/patients/${me.body.data.id}/timeline`)
+      .set('Authorization', `Bearer ${patient.token}`);
+    const eventTypes = timeline.body.data.map((e: { eventType: string }) => e.eventType);
+    expect(eventTypes).toContain('APPOINTMENT_NO_SHOW');
+  });
+
   it('includes the whole day when filtering by fromDate/toDate, not just midnight', async () => {
     const { doctor, date } = await setupDoctorWithFullDayAvailability();
     const patient = await registerPatient();

@@ -16,3 +16,13 @@ export const notificationIdParamSchema = z.object({
     id: z.coerce.number().int().positive(),
   }),
 });
+
+export const sendGeneralNotificationSchema = z.object({
+  body: z.object({
+    userId: z.coerce.number().int().positive(),
+    title: z.string().trim().min(1).max(200),
+    message: z.string().trim().min(1).max(1000),
+  }),
+  query: z.object({}).optional(),
+  params: z.object({}).optional(),
+});

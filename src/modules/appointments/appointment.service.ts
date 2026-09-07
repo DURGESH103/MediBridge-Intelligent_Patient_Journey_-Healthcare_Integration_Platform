@@ -144,6 +144,7 @@ export const appointmentService = {
       throw ApiError.badRequest('Only scheduled appointments can be confirmed');
     }
     const updated = await appointmentRepository.updateStatus(id, AppointmentStatus.CONFIRMED);
+    await journeyEventRepository.record(appointment.patientId, 'APPOINTMENT_CONFIRMED', 'Appointment confirmed', id);
     return updated!;
   },
 
@@ -163,6 +164,7 @@ export const appointmentService = {
       throw ApiError.badRequest(`An appointment with status ${appointment.status} cannot be marked as no-show`);
     }
     const updated = await appointmentRepository.updateStatus(id, AppointmentStatus.NO_SHOW);
+    await journeyEventRepository.record(appointment.patientId, 'APPOINTMENT_NO_SHOW', 'Marked as no-show', id);
     return updated!;
   },
 

@@ -114,4 +114,20 @@ export const appointmentRepository = {
     });
     return this.findById(id);
   },
+
+  /** Appointments starting within the reminder window that haven't been reminded yet. */
+  async findDueForReminder(leadMinutes: number): Promise<Appointment[]> {
+    const rows = await query<AppointmentRow[]>(
+      `SELECT * FROM appointments
+       WHERE status IN ('SCHEDULED', 'CONFIRMED')
+         AND reminder_sent_at IS NULL
+         AND scheduled_at BETWEEN NOW() AND DATE_ADD(NOW(), INTERVAL :leadMinutes MINUTE)`,
+      { leadMinutes }
+    );
+    return rows.map(mapRow);
+  },
+
+  async markReminderSent(id: number): Promise<void> {
+    await query('UPDATE appointments SET reminder_sent_at = NOW() WHERE id = :id', { id });
+  },
 };

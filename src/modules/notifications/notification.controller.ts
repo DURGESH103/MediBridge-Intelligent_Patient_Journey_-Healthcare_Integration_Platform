@@ -24,4 +24,10 @@ export const notificationController = {
     await notificationService.markAllRead(req.user!.userId);
     sendSuccess(res, 200, 'All notifications marked as read');
   }),
+
+  sendGeneral: asyncHandler(async (req: Request, res: Response) => {
+    const { userId, title, message } = req.body as { userId: number; title: string; message: string };
+    await notificationService.sendGeneralNotification(userId, title, message);
+    sendSuccess(res, 201, 'Notification sent successfully');
+  }),
 };

@@ -1,6 +1,8 @@
 import request from 'supertest';
 import { app, createStaffUser, registerPatient } from './helpers';
 import { UserRole } from '../src/types/roles';
+import { patientsRepository } from '../src/modules/patients/patients.repository';
+import { Gender } from '../src/modules/patients/patients.types';
 
 describe('Patients', () => {
   it('lets a patient view and update their own profile', async () => {
@@ -70,5 +72,22 @@ describe('Patients', () => {
       .set('Authorization', `Bearer ${receptionist.token}`)
       .send(payload);
     expect(second.status).toBe(409);
+  });
+
+  it('enforces duplicate (phone, date of birth) prevention at the database level', async () => {
+    // Calls the repository directly, bypassing patientsService's app-level
+    // pre-check, to prove the uq_patients_phone_dob constraint itself (added
+    // in migration 008) is the thing rejecting the second insert - not just
+    // the SELECT-then-insert check, which can't close a real race condition
+    // on its own.
+    const payload = {
+      fullName: 'DB Constraint Test',
+      dateOfBirth: '1975-06-06',
+      gender: Gender.MALE,
+      phone: '+911234577777',
+    };
+
+    await patientsRepository.create(payload);
+    await expect(patientsRepository.create(payload)).rejects.toMatchObject({ code: 'ER_DUP_ENTRY' });
   });
 });

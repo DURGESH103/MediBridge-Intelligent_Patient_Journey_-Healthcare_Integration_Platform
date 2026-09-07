@@ -5,6 +5,7 @@ import { logger } from './config/logger';
 import { verifyDatabaseConnection } from './config/database';
 import { connectRedis } from './config/redis';
 import { initSocketServer } from './sockets';
+import { appointmentReminderService } from './modules/appointments/appointmentReminder.service';
 
 async function bootstrap(): Promise<void> {
   await verifyDatabaseConnection();
@@ -13,6 +14,7 @@ async function bootstrap(): Promise<void> {
   const app = createApp();
   const httpServer = http.createServer(app);
   initSocketServer(httpServer);
+  appointmentReminderService.start();
 
   httpServer.listen(env.port, () => {
     logger.info(`MediBridge API listening on port ${env.port} [${env.nodeEnv}]`);

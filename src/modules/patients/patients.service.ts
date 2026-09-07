@@ -5,6 +5,9 @@ import { ApiError } from '../../utils/ApiError';
 
 export const patientsService = {
   async registerPatient(input: CreatePatientInput): Promise<Patient> {
+    // App-level pre-check gives a fast, friendly rejection in the common
+    // case; the DB unique constraint (migration 008) is the final guard
+    // against two concurrent requests both passing this check.
     const duplicate = await patientsRepository.findPotentialDuplicate(input.phone, input.dateOfBirth);
     if (duplicate) {
       throw ApiError.conflict(
@@ -12,9 +15,17 @@ export const patientsService = {
         [duplicate.patientCode]
       );
     }
-    const patient = await patientsRepository.create(input);
-    await journeyEventRepository.record(patient.id, 'REGISTRATION', 'Patient registered with MediBridge');
-    return patient;
+
+    try {
+      const patient = await patientsRepository.create(input);
+      await journeyEventRepository.record(patient.id, 'REGISTRATION', 'Patient registered with MediBridge');
+      return patient;
+    } catch (error) {
+      if (error instanceof Error && 'code' in error && (error as { code: string }).code === 'ER_DUP_ENTRY') {
+        throw ApiError.conflict('A patient with this phone number and date of birth is already registered');
+      }
+      throw error;
+    }
   },
 
   async getPatientById(id: number): Promise<Patient> {

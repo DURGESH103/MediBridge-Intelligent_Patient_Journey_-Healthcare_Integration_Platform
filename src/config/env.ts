@@ -44,5 +44,17 @@ export const env = {
   rateLimit: {
     windowMs: Number(process.env.RATE_LIMIT_WINDOW_MS ?? 900000),
     maxRequests: Number(process.env.RATE_LIMIT_MAX_REQUESTS ?? 100),
+    // Deliberately separate from the global limit above and much tighter by
+    // default - login is a common brute-force target - but still
+    // env-configurable so the test suite (which logs in far more often than
+    // any real client would in 15 minutes) isn't throttled by its own tests.
+    loginMaxRequests: Number(process.env.LOGIN_RATE_LIMIT_MAX_REQUESTS ?? 10),
+  },
+
+  appointmentReminder: {
+    // How far ahead of an appointment its reminder fires.
+    leadMinutes: Number(process.env.APPOINTMENT_REMINDER_LEAD_MINUTES ?? 60),
+    // How often the job checks for newly-due appointments.
+    checkIntervalMs: Number(process.env.APPOINTMENT_REMINDER_INTERVAL_MS ?? 5 * 60 * 1000),
   },
 };

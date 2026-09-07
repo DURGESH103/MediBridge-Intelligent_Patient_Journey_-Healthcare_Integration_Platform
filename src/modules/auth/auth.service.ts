@@ -65,6 +65,12 @@ export const authService = {
       await usersRepository.delete(user.id).catch((cleanupError) => {
         logger.error(`Failed to roll back user ${user.id} after registration failure: ${cleanupError}`);
       });
+      // The pre-check above already rejects the common case; this is the DB
+      // unique constraint (migration 008) catching a same-instant duplicate
+      // that raced past that check.
+      if (error instanceof Error && 'code' in error && (error as { code: string }).code === 'ER_DUP_ENTRY') {
+        throw ApiError.conflict('A patient with this phone number and date of birth is already registered');
+      }
       throw error;
     }
 
