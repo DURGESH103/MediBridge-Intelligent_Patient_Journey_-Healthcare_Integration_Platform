@@ -6,8 +6,8 @@ import { UserRole } from '../../types/roles';
 
 export const usersController = {
   createStaffUser: asyncHandler(async (req: Request, res: Response) => {
-    const { email, password, role } = req.body;
-    const user = await usersService.createStaffUser(email, password, role);
+    const { email, password, role, fullName } = req.body;
+    const user = await usersService.createStaffUser(email, password, role, fullName);
     sendSuccess(res, 201, 'Staff user created successfully', user);
   }),
 

@@ -6,6 +6,7 @@ export const createStaffUserSchema = z.object({
     email: z.string().email('A valid email is required'),
     password: z.string().min(8, 'Password must be at least 8 characters long'),
     role: z.nativeEnum(UserRole, { errorMap: () => ({ message: 'A valid role is required' }) }),
+    fullName: z.string().trim().min(2).max(150).optional(),
   }),
   query: z.object({}).optional(),
   params: z.object({}).optional(),

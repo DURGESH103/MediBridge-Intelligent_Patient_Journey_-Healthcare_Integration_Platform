@@ -9,7 +9,9 @@ export type JourneyEventType =
   | 'CONSULTATION_STARTED'
   | 'CONSULTATION_COMPLETED'
   | 'LAB_TEST_REQUESTED'
-  | 'LAB_REPORT_READY';
+  | 'LAB_REPORT_READY'
+  | 'BILLING_PENDING'
+  | 'BILLING_COMPLETED';
 
 export interface JourneyEvent {
   id: number;

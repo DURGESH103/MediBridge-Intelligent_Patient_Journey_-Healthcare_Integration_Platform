@@ -45,6 +45,7 @@ export const authService = {
     const passwordHash = await hashPassword(input.password);
     const user = await usersRepository.create({
       email: normalizedEmail,
+      fullName: input.fullName,
       passwordHash,
       role: UserRole.PATIENT,
     });
@@ -125,5 +126,27 @@ export const authService = {
       throw ApiError.unauthorized('Invalid or expired session');
     }
     return toSafeUser(user);
+  },
+
+  async updateOwnProfile(userId: number, fullName: string): Promise<SafeUser> {
+    const user = await usersRepository.findById(userId);
+    if (!user) {
+      throw ApiError.notFound('User not found');
+    }
+    await usersRepository.updateFullName(userId, fullName);
+    return { ...toSafeUser(user), fullName };
+  },
+
+  async changePassword(userId: number, currentPassword: string, newPassword: string): Promise<void> {
+    const user = await usersRepository.findById(userId);
+    if (!user) {
+      throw ApiError.notFound('User not found');
+    }
+    const matches = await comparePassword(currentPassword, user.passwordHash);
+    if (!matches) {
+      throw ApiError.badRequest('Current password is incorrect');
+    }
+    const passwordHash = await hashPassword(newPassword);
+    await usersRepository.updatePasswordHash(userId, passwordHash);
   },
 };

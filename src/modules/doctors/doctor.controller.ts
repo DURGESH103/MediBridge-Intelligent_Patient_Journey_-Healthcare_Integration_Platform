@@ -12,6 +12,18 @@ function assertCanManageAvailability(req: Request, doctor: Doctor): void {
   }
 }
 
+function assertCanUpdateDoctor(req: Request, doctor: Doctor): void {
+  if (req.user?.role !== UserRole.DOCTOR) {
+    return;
+  }
+  if (doctor.userId !== req.user.userId) {
+    throw ApiError.forbidden('You can only update your own profile');
+  }
+  if (req.body.departmentId !== undefined) {
+    throw ApiError.forbidden('Only an administrator can change your department');
+  }
+}
+
 export const doctorController = {
   registerDoctor: asyncHandler(async (req: Request, res: Response) => {
     const result = await doctorService.registerDoctor(req.body);
@@ -35,7 +47,10 @@ export const doctorController = {
   }),
 
   updateDoctor: asyncHandler(async (req: Request, res: Response) => {
-    const doctor = await doctorService.updateDoctor(Number(req.params.id), req.body);
+    const doctorId = Number(req.params.id);
+    const existing = await doctorService.getDoctorById(doctorId);
+    assertCanUpdateDoctor(req, existing);
+    const doctor = await doctorService.updateDoctor(doctorId, req.body);
     sendSuccess(res, 200, 'Doctor updated successfully', doctor);
   }),
 

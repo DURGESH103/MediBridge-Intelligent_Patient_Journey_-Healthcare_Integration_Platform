@@ -39,3 +39,20 @@ export const refreshSchema = z.object({
   query: z.object({}).optional(),
   params: z.object({}).optional(),
 });
+
+export const updateMeSchema = z.object({
+  body: z.object({
+    fullName: z.string().trim().min(2, 'Full name is required').max(150),
+  }),
+  query: z.object({}).optional(),
+  params: z.object({}).optional(),
+});
+
+export const changePasswordSchema = z.object({
+  body: z.object({
+    currentPassword: z.string().min(1, 'Current password is required'),
+    newPassword: passwordSchema,
+  }),
+  query: z.object({}).optional(),
+  params: z.object({}).optional(),
+});

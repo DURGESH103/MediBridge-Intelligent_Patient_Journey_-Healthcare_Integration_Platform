@@ -7,6 +7,8 @@ import { queueRepository } from '../queue/queue.repository';
 import { queueService } from '../queue/queue.service';
 import { QueueStatus } from '../queue/queue.types';
 import { journeyEventRepository } from '../journey/journeyEvent.repository';
+import { doctorRepository } from '../doctors/doctor.repository';
+import { billingService } from '../billing/billing.service';
 import { ApiError } from '../../utils/ApiError';
 
 export const consultationService = {
@@ -99,6 +101,17 @@ export const consultationService = {
 
     const labRequests = await labRepository.findByConsultationId(id);
     const nextStep: NextStep = labRequests.length > 0 ? 'LABORATORY' : 'BILLING';
+
+    // The consultation fee is billable as soon as the consultation itself is
+    // done, independent of whether lab work still needs to happen - billing
+    // and laboratory are parallel next steps, not sequential.
+    const doctor = await doctorRepository.findById(consultation.doctorId);
+    await billingService.createForConsultation({
+      patientId: consultation.patientId,
+      appointmentId: consultation.appointmentId,
+      consultationId: consultation.id,
+      amount: doctor?.consultationFee ?? null,
+    });
 
     return { consultation: updated!, nextStep };
   },

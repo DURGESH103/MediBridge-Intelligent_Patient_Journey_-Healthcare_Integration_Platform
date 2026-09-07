@@ -37,6 +37,7 @@ export const doctorService = {
     const passwordHash = await hashPassword(input.password);
     const user = await usersRepository.create({
       email: normalizedEmail,
+      fullName: input.fullName,
       passwordHash,
       role: UserRole.DOCTOR,
     });

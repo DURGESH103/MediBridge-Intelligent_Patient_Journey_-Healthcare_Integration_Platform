@@ -10,7 +10,7 @@ export function toSafeUser(user: User): SafeUser {
 }
 
 export const usersService = {
-  async createStaffUser(email: string, password: string, role: UserRole): Promise<SafeUser> {
+  async createStaffUser(email: string, password: string, role: UserRole, fullName?: string | null): Promise<SafeUser> {
     if (role === UserRole.PATIENT) {
       throw ApiError.badRequest('Patients should self-register through /auth/register');
     }
@@ -22,7 +22,7 @@ export const usersService = {
     }
 
     const passwordHash = await hashPassword(password);
-    const user = await usersRepository.create({ email: normalizedEmail, passwordHash, role });
+    const user = await usersRepository.create({ email: normalizedEmail, fullName, passwordHash, role });
     return toSafeUser(user);
   },
 

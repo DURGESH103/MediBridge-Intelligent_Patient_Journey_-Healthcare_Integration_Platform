@@ -20,7 +20,12 @@ router.post('/', authorize(UserRole.ADMIN), validate(registerDoctorSchema), doct
 router.get('/', validate(listDoctorsSchema), doctorController.listDoctors);
 router.get('/me', authorize(UserRole.DOCTOR), doctorController.getMyProfile);
 router.get('/:id', validate(doctorIdParamSchema), doctorController.getDoctorById);
-router.patch('/:id', authorize(UserRole.ADMIN), validate(updateDoctorSchema), doctorController.updateDoctor);
+router.patch(
+  '/:id',
+  authorize(UserRole.ADMIN, UserRole.DOCTOR),
+  validate(updateDoctorSchema),
+  doctorController.updateDoctor
+);
 
 router.get('/:id/availability', validate(doctorIdParamSchema), doctorController.getAvailability);
 router.put(

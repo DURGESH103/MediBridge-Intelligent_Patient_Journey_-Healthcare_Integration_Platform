@@ -61,4 +61,14 @@ export const authController = {
     const user = await authService.getCurrentUser(req.user!.userId);
     sendSuccess(res, 200, 'Current user retrieved successfully', user);
   }),
+
+  updateMe: asyncHandler(async (req: Request, res: Response) => {
+    const user = await authService.updateOwnProfile(req.user!.userId, req.body.fullName);
+    sendSuccess(res, 200, 'Profile updated successfully', user);
+  }),
+
+  changePassword: asyncHandler(async (req: Request, res: Response) => {
+    await authService.changePassword(req.user!.userId, req.body.currentPassword, req.body.newPassword);
+    sendSuccess(res, 200, 'Password changed successfully');
+  }),
 };

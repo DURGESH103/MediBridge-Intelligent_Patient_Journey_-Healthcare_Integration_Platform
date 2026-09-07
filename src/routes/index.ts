@@ -10,6 +10,7 @@ import consultationRoutes from '../modules/consultations/consultation.routes';
 import labRoutes from '../modules/laboratory/lab.routes';
 import journeyRoutes from '../modules/journey/journey.routes';
 import notificationRoutes from '../modules/notifications/notification.routes';
+import billingRoutes from '../modules/billing/billing.routes';
 
 const router = Router();
 
@@ -28,5 +29,6 @@ router.use('/consultations', consultationRoutes);
 router.use('/laboratory', labRoutes);
 router.use('/journeys', journeyRoutes);
 router.use('/notifications', notificationRoutes);
+router.use('/billing', billingRoutes);
 
 export default router;
