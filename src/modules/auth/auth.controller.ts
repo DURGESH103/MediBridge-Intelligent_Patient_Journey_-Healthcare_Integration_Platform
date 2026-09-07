@@ -56,4 +56,9 @@ export const authController = {
     res.clearCookie(REFRESH_COOKIE_NAME, { path: `${env.apiPrefix}/auth` });
     sendSuccess(res, 200, 'Logged out successfully');
   }),
+
+  me: asyncHandler(async (req: Request, res: Response) => {
+    const user = await authService.getCurrentUser(req.user!.userId);
+    sendSuccess(res, 200, 'Current user retrieved successfully', user);
+  }),
 };

@@ -112,4 +112,12 @@ export const authService = {
   async logout(refreshToken: string): Promise<void> {
     await authRepository.revokeToken(hashRefreshToken(refreshToken));
   },
+
+  async getCurrentUser(userId: number): Promise<SafeUser> {
+    const user = await usersRepository.findById(userId);
+    if (!user || !user.isActive) {
+      throw ApiError.unauthorized('Invalid or expired session');
+    }
+    return toSafeUser(user);
+  },
 };

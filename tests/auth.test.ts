@@ -121,4 +121,17 @@ describe('Authentication', () => {
     const res = await request(app).get('/api/v1/users').set('Authorization', `Bearer ${token}`);
     expect(res.status).toBe(403);
   });
+
+  it('returns the current session\'s user on /auth/me and rejects it without a token', async () => {
+    const { token, email } = await registerPatient();
+
+    const authed = await request(app).get('/api/v1/auth/me').set('Authorization', `Bearer ${token}`);
+    expect(authed.status).toBe(200);
+    expect(authed.body.data.email).toBe(email);
+    expect(authed.body.data.role).toBe('PATIENT');
+    expect(authed.body.data.passwordHash).toBeUndefined();
+
+    const unauthed = await request(app).get('/api/v1/auth/me');
+    expect(unauthed.status).toBe(401);
+  });
 });
