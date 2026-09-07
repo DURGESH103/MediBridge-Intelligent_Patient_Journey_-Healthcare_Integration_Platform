@@ -100,4 +100,32 @@ describe('Queue', () => {
       .set('Authorization', `Bearer ${doctor.token}`);
     expect(callNextAgain.status).toBe(409);
   });
+
+  it('resolves a queue entry from its appointment, scoped to the owning patient', async () => {
+    const { doctor, today } = await setupDoctorAvailableToday();
+    const owner = await registerPatient();
+    const stranger = await registerPatient();
+    const appointment = await bookNextAvailableSlot(owner.token, doctor.doctorId, today);
+
+    const checkIn = await request(app)
+      .post('/api/v1/queue/check-in')
+      .set('Authorization', `Bearer ${owner.token}`)
+      .send({ appointmentId: appointment.id });
+
+    const ownerLookup = await request(app)
+      .get(`/api/v1/queue/appointments/${appointment.id}`)
+      .set('Authorization', `Bearer ${owner.token}`);
+    expect(ownerLookup.status).toBe(200);
+    expect(ownerLookup.body.data.id).toBe(checkIn.body.data.id);
+
+    const strangerLookup = await request(app)
+      .get(`/api/v1/queue/appointments/${appointment.id}`)
+      .set('Authorization', `Bearer ${stranger.token}`);
+    expect(strangerLookup.status).toBe(403);
+
+    const doctorLookup = await request(app)
+      .get(`/api/v1/queue/appointments/${appointment.id}`)
+      .set('Authorization', `Bearer ${doctor.token}`);
+    expect(doctorLookup.status).toBe(200);
+  });
 });

@@ -16,6 +16,10 @@ export function setAccessToken(token: string | null): void {
   currentAccessToken = token;
 }
 
+export function getAccessToken(): string | null {
+  return currentAccessToken;
+}
+
 apiClient.interceptors.request.use((config) => {
   if (currentAccessToken) {
     config.headers.Authorization = `Bearer ${currentAccessToken}`;

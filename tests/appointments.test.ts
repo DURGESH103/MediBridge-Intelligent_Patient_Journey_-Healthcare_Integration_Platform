@@ -90,4 +90,21 @@ describe('Appointments', () => {
     const bookedSlot = res.body.data.find((slot: { startTime: string }) => slot.startTime === '13:00');
     expect(bookedSlot.available).toBe(false);
   });
+
+  it('includes the whole day when filtering by fromDate/toDate, not just midnight', async () => {
+    const { doctor, date } = await setupDoctorWithFullDayAvailability();
+    const patient = await registerPatient();
+
+    await request(app)
+      .post('/api/v1/appointments')
+      .set('Authorization', `Bearer ${patient.token}`)
+      .send({ doctorId: doctor.doctorId, scheduledAt: `${date}T23:00:00Z` });
+
+    const res = await request(app)
+      .get(`/api/v1/appointments?doctorId=${doctor.doctorId}&fromDate=${date}&toDate=${date}`)
+      .set('Authorization', `Bearer ${doctor.token}`);
+
+    expect(res.status).toBe(200);
+    expect(res.body.data.some((a: { scheduledAt: string }) => a.scheduledAt.startsWith(`${date}T23:00`))).toBe(true);
+  });
 });

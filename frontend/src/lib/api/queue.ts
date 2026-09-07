@@ -41,3 +41,8 @@ export async function cancelQueueEntry(entryId: number): Promise<QueueEntry> {
   const res = await apiClient.patch<ApiSuccess<QueueEntry>>(`/queue/entries/${entryId}/cancel`);
   return res.data.data;
 }
+
+export async function getQueueEntryByAppointment(appointmentId: number): Promise<QueueEntry> {
+  const res = await apiClient.get<ApiSuccess<QueueEntry>>(`/queue/appointments/${appointmentId}`);
+  return res.data.data;
+}

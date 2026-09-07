@@ -23,3 +23,11 @@ export const queueEntryIdParamSchema = z.object({
     id: z.coerce.number().int().positive(),
   }),
 });
+
+export const appointmentIdParamSchema = z.object({
+  body: z.object({}).optional(),
+  query: z.object({}).optional(),
+  params: z.object({
+    appointmentId: z.coerce.number().int().positive(),
+  }),
+});

@@ -15,6 +15,14 @@ export const pool = mysql.createPool({
   // Keep DATE columns as plain 'YYYY-MM-DD' strings; letting mysql2 convert them to JS Date
   // objects re-interprets them in the server's local timezone and can shift the calendar day.
   dateStrings: ['DATE'],
+  // Without this, mysql2 converts JS Date <-> DATETIME using the server process's
+  // local timezone (e.g. IST) instead of UTC. Reads-after-writes still round-trip
+  // to the right instant either way, which hid this for a long time, but the raw
+  // stored value ends up shifted - breaking anything that compares it directly in
+  // SQL (DATE(scheduled_at), fromDate/toDate filters, slot-availability lookups).
+  // The whole app treats stored HH:MM/DATETIME values as literal UTC wall-clock,
+  // so the connection must use UTC too.
+  timezone: 'Z',
 });
 
 type NamedParams = Record<string, unknown>;

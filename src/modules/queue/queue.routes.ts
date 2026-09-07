@@ -4,7 +4,7 @@ import { validate } from '../../middleware/validate';
 import { authenticate } from '../../middleware/authenticate';
 import { authorize } from '../../middleware/authorize';
 import { UserRole } from '../../types/roles';
-import { checkInSchema, doctorIdParamSchema, queueEntryIdParamSchema } from './queue.validation';
+import { appointmentIdParamSchema, checkInSchema, doctorIdParamSchema, queueEntryIdParamSchema } from './queue.validation';
 
 const router = Router();
 
@@ -36,6 +36,12 @@ router.patch(
 );
 
 router.get('/entries/:id', validate(queueEntryIdParamSchema), queueController.getEntryStatus);
+
+router.get(
+  '/appointments/:appointmentId',
+  validate(appointmentIdParamSchema),
+  queueController.getEntryByAppointment
+);
 
 router.patch(
   '/entries/:id/complete',

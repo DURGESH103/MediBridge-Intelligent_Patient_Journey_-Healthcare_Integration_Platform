@@ -86,7 +86,10 @@ export const appointmentRepository = {
       params.fromDate = filters.fromDate;
     }
     if (filters.toDate) {
-      conditions.push('scheduled_at <= :toDate');
+      // toDate is a plain 'YYYY-MM-DD' string; comparing scheduled_at against
+      // it directly would treat it as midnight and exclude the rest of that
+      // day, so widen the bound to just before the following day instead.
+      conditions.push('scheduled_at < DATE_ADD(:toDate, INTERVAL 1 DAY)');
       params.toDate = filters.toDate;
     }
 

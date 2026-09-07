@@ -169,4 +169,12 @@ export const queueService = {
     }
     return entry;
   },
+
+  async getEntryByAppointmentId(appointmentId: number): Promise<QueueEntry> {
+    const entry = await queueRepository.findByAppointmentId(appointmentId);
+    if (!entry) {
+      throw ApiError.notFound('No queue entry found for this appointment');
+    }
+    return entry;
+  },
 };

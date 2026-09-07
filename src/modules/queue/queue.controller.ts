@@ -101,4 +101,21 @@ export const queueController = {
     const updated = await queueService.cancelEntry(entryId);
     sendSuccess(res, 200, 'Queue entry cancelled', updated);
   }),
+
+  getEntryByAppointment: asyncHandler(async (req: Request, res: Response) => {
+    const appointmentId = Number(req.params.appointmentId);
+
+    if (req.user!.role === UserRole.PATIENT) {
+      const [appointment, patient] = await Promise.all([
+        appointmentService.getAppointmentById(appointmentId),
+        patientsService.getPatientByUserId(req.user!.userId),
+      ]);
+      if (appointment.patientId !== patient.id) {
+        throw ApiError.forbidden('You can only access your own queue entry');
+      }
+    }
+
+    const entry = await queueService.getEntryByAppointmentId(appointmentId);
+    sendSuccess(res, 200, 'Queue entry retrieved successfully', entry);
+  }),
 };

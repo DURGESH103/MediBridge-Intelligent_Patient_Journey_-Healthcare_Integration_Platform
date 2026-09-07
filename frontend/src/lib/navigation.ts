@@ -28,6 +28,7 @@ export const NAV_ITEMS_BY_ROLE: Record<UserRole, NavItem[]> = {
     { label: 'Patients', href: '/patients' },
     { label: 'Appointments', href: '/appointments' },
     { label: 'Check-In', href: '/check-in' },
+    { label: 'Queue', href: '/queue' },
   ],
   LAB_STAFF: [
     { label: 'Dashboard', href: '/' },
