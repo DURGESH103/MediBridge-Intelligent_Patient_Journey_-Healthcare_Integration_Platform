@@ -2,7 +2,7 @@
 
 import { useEffect, useState } from 'react';
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
-import { useForm } from 'react-hook-form';
+import { useForm, useWatch } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { getDoctorAvailability, getMyDoctorProfile, setDoctorAvailability } from '@/lib/api/doctors';
 import { getApiErrorMessage } from '@/lib/api/client';
@@ -42,7 +42,7 @@ function AvailabilityPageContent() {
     register,
     handleSubmit,
     reset,
-    watch,
+    control,
     formState: { errors },
   } = useForm<AvailabilityFormValues>({
     resolver: zodResolver(availabilityFormSchema),
@@ -50,6 +50,7 @@ function AvailabilityPageContent() {
       slots: DAY_LABELS.map(() => ({ enabled: false, startTime: '09:00', endTime: '17:00', slotDurationMinutes: '15' })),
     },
   });
+  const slots = useWatch({ control, name: 'slots' });
 
   // Populate the form once the doctor's saved availability has loaded.
   useEffect(() => {
@@ -99,8 +100,6 @@ function AvailabilityPageContent() {
 
   if (doctorQuery.isLoading || availabilityQuery.isLoading) return <LoadingSpinner />;
   if (doctorQuery.isError) return <ErrorState message={getApiErrorMessage(doctorQuery.error)} />;
-
-  const slots = watch('slots');
 
   return (
     <>

@@ -1,6 +1,7 @@
 'use client';
 
 import { createContext, useCallback, useContext, useEffect, useState, type ReactNode } from 'react';
+import { useQueryClient } from '@tanstack/react-query';
 import { setAccessToken, setSessionExpiredHandler } from '@/lib/api/client';
 import { login as loginRequest, logout as logoutRequest, registerPatient as registerRequest } from '@/lib/api/auth';
 import type { LoginPayload, RegisterPatientPayload } from '@/lib/api/auth';
@@ -22,12 +23,17 @@ const AuthContext = createContext<AuthContextValue | null>(null);
 export function AuthProvider({ children }: { children: ReactNode }) {
   const [user, setUser] = useState<SafeUser | null>(null);
   const [status, setStatus] = useState<AuthStatus>('loading');
+  const queryClient = useQueryClient();
 
+  // The QueryClient lives for the whole tab, outliving any single login
+  // session. Without clearing it, one user's cached data (patients,
+  // appointments, ...) could flash to whoever logs in next in the same tab.
   const clearSession = useCallback(() => {
     setAccessToken(null);
     setUser(null);
     setStatus('unauthenticated');
-  }, []);
+    queryClient.clear();
+  }, [queryClient]);
 
   // If a refresh silently fails mid-session (expired/revoked refresh token),
   // the axios interceptor calls this to drop us back to a logged-out state.
@@ -61,21 +67,29 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     };
   }, []);
 
-  const login = useCallback(async (payload: LoginPayload) => {
-    const { user: loggedInUser, accessToken } = await loginRequest(payload);
-    setAccessToken(accessToken);
-    setUser(loggedInUser);
-    setStatus('authenticated');
-    return loggedInUser;
-  }, []);
+  const login = useCallback(
+    async (payload: LoginPayload) => {
+      const { user: loggedInUser, accessToken } = await loginRequest(payload);
+      queryClient.clear();
+      setAccessToken(accessToken);
+      setUser(loggedInUser);
+      setStatus('authenticated');
+      return loggedInUser;
+    },
+    [queryClient]
+  );
 
-  const registerPatient = useCallback(async (payload: RegisterPatientPayload) => {
-    const { user: registeredUser, accessToken } = await registerRequest(payload);
-    setAccessToken(accessToken);
-    setUser(registeredUser);
-    setStatus('authenticated');
-    return registeredUser;
-  }, []);
+  const registerPatient = useCallback(
+    async (payload: RegisterPatientPayload) => {
+      const { user: registeredUser, accessToken } = await registerRequest(payload);
+      queryClient.clear();
+      setAccessToken(accessToken);
+      setUser(registeredUser);
+      setStatus('authenticated');
+      return registeredUser;
+    },
+    [queryClient]
+  );
 
   const logout = useCallback(async () => {
     try {

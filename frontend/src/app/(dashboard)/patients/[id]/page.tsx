@@ -1,12 +1,14 @@
 'use client';
 
 import { useEffect, useState } from 'react';
+import Link from 'next/link';
 import { useParams } from 'next/navigation';
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { getPatientById, updatePatient } from '@/lib/api/patients';
 import { getApiErrorMessage } from '@/lib/api/client';
+import { useAuth } from '@/lib/auth/AuthContext';
 import { registerWalkInPatientSchema, type RegisterWalkInPatientFormValues } from '@/lib/validation/patientSchemas';
 import { PageHeader } from '@/components/layout/PageHeader';
 import { RequireRole } from '@/components/layout/RequireRole';
@@ -27,6 +29,7 @@ export default function PatientDetailPage() {
 function PatientDetailPageContent() {
   const { id } = useParams<{ id: string }>();
   const patientId = Number(id);
+  const { user } = useAuth();
   const [apiError, setApiError] = useState<string | null>(null);
   const [successMessage, setSuccessMessage] = useState<string | null>(null);
   const queryClient = useQueryClient();
@@ -96,7 +99,17 @@ function PatientDetailPageContent() {
 
   return (
     <>
-      <PageHeader title={patientQuery.data.fullName} description={`Patient code ${patientQuery.data.patientCode}`} />
+      <PageHeader
+        title={patientQuery.data.fullName}
+        description={`Patient code ${patientQuery.data.patientCode}`}
+        action={
+          user?.role === 'RECEPTIONIST' && (
+            <Link href={`/appointments/book?patientId=${patientQuery.data.id}`}>
+              <Button>Book Appointment</Button>
+            </Link>
+          )
+        }
+      />
 
       <Card>
         <form onSubmit={handleSubmit(onSubmit)} className="grid grid-cols-1 gap-4 sm:grid-cols-2" noValidate>
