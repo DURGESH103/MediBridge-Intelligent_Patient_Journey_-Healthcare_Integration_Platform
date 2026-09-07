@@ -1,5 +1,6 @@
 'use client';
 
+import { useRouter } from 'next/navigation';
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import {
   callNextPatient,
@@ -21,6 +22,7 @@ import { StatusBadge } from '@/components/ui/StatusBadge';
 import { BigStat } from './BigStat';
 
 export function DoctorQueueBoard({ doctorId }: { doctorId: number }) {
+  const router = useRouter();
   const queryClient = useQueryClient();
 
   const summaryQuery = useQuery({ queryKey: ['queue', 'summary', doctorId], queryFn: () => getDoctorQueueSummary(doctorId) });
@@ -88,6 +90,9 @@ export function DoctorQueueBoard({ doctorId }: { doctorId: number }) {
                   <StatusBadge {...queueStatusStyle(entry.status)} />
                   {entry.status === 'IN_PROGRESS' && (
                     <>
+                      <Button size="sm" variant="secondary" onClick={() => router.push(`/consultations/${entry.appointmentId}`)}>
+                        Open Consultation
+                      </Button>
                       <Button
                         size="sm"
                         isLoading={completeMutation.isPending && completeMutation.variables === entry.id}

@@ -12,6 +12,11 @@ export async function getConsultationById(id: number): Promise<Consultation> {
   return res.data.data;
 }
 
+export async function getConsultationByAppointment(appointmentId: number): Promise<Consultation> {
+  const res = await apiClient.get<ApiSuccess<Consultation>>(`/consultations/by-appointment/${appointmentId}`);
+  return res.data.data;
+}
+
 export async function updateConsultationNotes(
   id: number,
   payload: { diagnosis?: string | null; notes?: string | null }
