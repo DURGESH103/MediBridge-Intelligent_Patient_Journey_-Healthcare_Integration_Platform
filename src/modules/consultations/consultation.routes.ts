@@ -6,6 +6,7 @@ import { authorize } from '../../middleware/authorize';
 import { UserRole } from '../../types/roles';
 import {
   addPrescriptionSchema,
+  appointmentIdParamSchema,
   consultationIdParamSchema,
   requestLabTestSchema,
   startConsultationSchema,
@@ -24,6 +25,12 @@ router.post(
 );
 
 router.get('/:id', validate(consultationIdParamSchema), consultationController.getConsultationById);
+
+router.get(
+  '/by-appointment/:appointmentId',
+  validate(appointmentIdParamSchema),
+  consultationController.getByAppointment
+);
 
 router.patch(
   '/:id',

@@ -36,6 +36,12 @@ export const consultationController = {
     sendSuccess(res, 200, 'Consultation retrieved successfully', consultation);
   }),
 
+  getByAppointment: asyncHandler(async (req: Request, res: Response) => {
+    const consultation = await consultationService.getByAppointmentId(Number(req.params.appointmentId));
+    await assertCanAccessConsultation(req, consultation);
+    sendSuccess(res, 200, 'Consultation retrieved successfully', consultation);
+  }),
+
   updateNotes: asyncHandler(async (req: Request, res: Response) => {
     const existing = await consultationService.getConsultationById(Number(req.params.id));
     await assertCanAccessConsultation(req, existing);

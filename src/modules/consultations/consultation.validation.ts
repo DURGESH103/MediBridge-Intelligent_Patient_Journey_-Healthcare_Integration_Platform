@@ -16,6 +16,14 @@ export const consultationIdParamSchema = z.object({
   }),
 });
 
+export const appointmentIdParamSchema = z.object({
+  body: z.object({}).optional(),
+  query: z.object({}).optional(),
+  params: z.object({
+    appointmentId: z.coerce.number().int().positive(),
+  }),
+});
+
 export const updateNotesSchema = z.object({
   body: z.object({
     diagnosis: z.string().max(2000).optional().nullable(),

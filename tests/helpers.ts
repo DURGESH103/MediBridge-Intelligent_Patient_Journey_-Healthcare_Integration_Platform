@@ -98,3 +98,43 @@ export function tomorrowUtcDateString(): string {
   tomorrow.setUTCDate(tomorrow.getUTCDate() + 1);
   return tomorrow.toISOString().slice(0, 10);
 }
+
+/**
+ * Full setup for tests that need a patient already checked in and waiting:
+ * department -> doctor with today's availability -> patient books -> checks in.
+ */
+export async function setupCheckedInAppointment() {
+  const admin = await createStaffUser(UserRole.ADMIN);
+  const department = await createDepartment(admin.token);
+  const doctor = await createDoctor(admin.token, department.id);
+
+  const today = todayUtcDateString();
+  const dayOfWeek = new Date(`${today}T00:00:00Z`).getUTCDay();
+  await request(app)
+    .put(`/api/v1/doctors/${doctor.doctorId}/availability`)
+    .set('Authorization', `Bearer ${doctor.token}`)
+    .send({ slots: [{ dayOfWeek, startTime: '00:00', endTime: '23:45', slotDurationMinutes: 15 }] });
+
+  const patient = await registerPatient();
+
+  const slotsRes = await request(app)
+    .get(`/api/v1/appointments/available-slots?doctorId=${doctor.doctorId}&date=${today}`)
+    .set('Authorization', `Bearer ${patient.token}`);
+  const slot = slotsRes.body.data.find((s: { available: boolean }) => s.available);
+  if (!slot) {
+    throw new Error('No available slot found for today - cannot set up a checked-in appointment for this test');
+  }
+
+  const bookingRes = await request(app)
+    .post('/api/v1/appointments')
+    .set('Authorization', `Bearer ${patient.token}`)
+    .send({ doctorId: doctor.doctorId, scheduledAt: `${today}T${slot.startTime}:00Z` });
+  const appointmentId = bookingRes.body.data.id as number;
+
+  await request(app)
+    .post('/api/v1/queue/check-in')
+    .set('Authorization', `Bearer ${patient.token}`)
+    .send({ appointmentId });
+
+  return { admin, doctor, patient, appointmentId };
+}
