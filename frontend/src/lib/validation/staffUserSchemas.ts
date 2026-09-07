@@ -1,6 +1,7 @@
 import { z } from 'zod';
 
 export const createStaffUserSchema = z.object({
+  fullName: z.string().trim().max(150).optional(),
   email: z.string().min(1, 'Email is required').email('Enter a valid email address'),
   password: z
     .string()

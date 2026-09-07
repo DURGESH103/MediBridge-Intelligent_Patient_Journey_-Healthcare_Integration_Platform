@@ -44,6 +44,21 @@ export async function registerDoctor(payload: RegisterDoctorPayload): Promise<{ 
   return res.data.data;
 }
 
+export interface UpdateDoctorPayload {
+  departmentId?: number;
+  fullName?: string;
+  specialization?: string;
+  qualification?: string | null;
+  phone?: string | null;
+  consultationFee?: number | null;
+  averageConsultationMinutes?: number;
+}
+
+export async function updateDoctor(id: number, payload: UpdateDoctorPayload): Promise<Doctor> {
+  const res = await apiClient.patch<ApiSuccess<Doctor>>(`/doctors/${id}`, payload);
+  return res.data.data;
+}
+
 export async function getDoctorAvailability(doctorId: number): Promise<DoctorAvailability[]> {
   const res = await apiClient.get<ApiSuccess<DoctorAvailability[]>>(`/doctors/${doctorId}/availability`);
   return res.data.data;

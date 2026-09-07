@@ -1,6 +1,7 @@
 import type { StatusTone } from '@/components/ui/StatusBadge';
 import type {
   AppointmentStatus,
+  BillingStatus,
   ConsultationStatus,
   JourneyStageStatus,
   LabTestStatus,
@@ -51,6 +52,14 @@ export function labTestStatusStyle(status: LabTestStatus): { label: string; tone
     SAMPLE_COLLECTED: 'info',
     PROCESSING: 'warning',
     COMPLETED: 'success',
+  };
+  return { label: toTitleCase(status), tone: tones[status] };
+}
+
+export function billingStatusStyle(status: BillingStatus): { label: string; tone: StatusTone } {
+  const tones: Record<BillingStatus, StatusTone> = {
+    PENDING: 'warning',
+    PAID: 'success',
   };
   return { label: toTitleCase(status), tone: tones[status] };
 }

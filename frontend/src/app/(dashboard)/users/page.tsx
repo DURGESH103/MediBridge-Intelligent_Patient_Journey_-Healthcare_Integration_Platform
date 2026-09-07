@@ -75,6 +75,7 @@ function StaffUsersPageContent() {
         <Card className="mb-6">
           <h2 className="text-sm font-semibold text-slate-900">Create Staff Account</h2>
           <form onSubmit={handleSubmit(onSubmit)} className="mt-4 grid grid-cols-1 gap-4 sm:grid-cols-3" noValidate>
+            <Input label="Full Name (optional)" error={errors.fullName?.message} {...register('fullName')} />
             <Input label="Email" type="email" error={errors.email?.message} {...register('email')} />
             <Input label="Password" type="password" error={errors.password?.message} {...register('password')} />
             <div className="flex flex-col gap-1">
@@ -117,8 +118,11 @@ function StaffUsersPageContent() {
             {staffUsers.map((user) => (
               <li key={user.id} className="flex items-center justify-between gap-3 py-3">
                 <div className="min-w-0">
-                  <p className="truncate text-sm font-medium text-slate-900">{user.email}</p>
-                  <p className="text-xs text-slate-500">{formatRole(user.role)}</p>
+                  <p className="truncate text-sm font-medium text-slate-900">{user.fullName ?? user.email}</p>
+                  <p className="truncate text-xs text-slate-500">
+                    {user.fullName ? user.email : formatRole(user.role)}
+                    {user.fullName ? ` · ${formatRole(user.role)}` : ''}
+                  </p>
                 </div>
                 <div className="flex shrink-0 items-center gap-3">
                   <StatusBadge label={user.isActive ? 'Active' : 'Inactive'} tone={user.isActive ? 'success' : 'neutral'} />

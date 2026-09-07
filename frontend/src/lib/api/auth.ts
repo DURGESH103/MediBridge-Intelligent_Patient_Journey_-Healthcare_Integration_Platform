@@ -41,7 +41,21 @@ export async function refreshSession(): Promise<{ accessToken: string }> {
   return res.data.data;
 }
 
-export async function createStaffUser(payload: { email: string; password: string; role: UserRole }): Promise<SafeUser> {
+export async function updateMyProfile(fullName: string): Promise<SafeUser> {
+  const res = await apiClient.patch<ApiSuccess<SafeUser>>('/auth/me', { fullName });
+  return res.data.data;
+}
+
+export async function changePassword(currentPassword: string, newPassword: string): Promise<void> {
+  await apiClient.post('/auth/change-password', { currentPassword, newPassword });
+}
+
+export async function createStaffUser(payload: {
+  email: string;
+  password: string;
+  role: UserRole;
+  fullName?: string;
+}): Promise<SafeUser> {
   const res = await apiClient.post<ApiSuccess<SafeUser>>('/users', payload);
   return res.data.data;
 }

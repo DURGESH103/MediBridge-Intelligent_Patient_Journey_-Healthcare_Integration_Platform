@@ -187,6 +187,20 @@ export interface PatientJourney {
   timeline: JourneyEvent[];
 }
 
+export type BillingStatus = 'PENDING' | 'PAID';
+
+export interface BillingRecord {
+  id: number;
+  patientId: number;
+  appointmentId: number;
+  consultationId: number;
+  amount: number | null;
+  status: BillingStatus;
+  paidAt: string | null;
+  createdAt: string;
+  updatedAt: string;
+}
+
 export type NotificationType =
   | 'APPOINTMENT_CONFIRMATION'
   | 'APPOINTMENT_REMINDER'

@@ -16,6 +16,7 @@ interface AuthContextValue {
   login: (payload: LoginPayload) => Promise<SafeUser>;
   registerPatient: (payload: RegisterPatientPayload) => Promise<SafeUser>;
   logout: () => Promise<void>;
+  updateUser: (patch: Partial<SafeUser>) => void;
 }
 
 const AuthContext = createContext<AuthContextValue | null>(null);
@@ -99,8 +100,16 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     }
   }, [clearSession]);
 
+  // Lets a page that just saved a profile edit (e.g. full name) reflect it
+  // immediately in shared UI like the header, without a full session refetch.
+  const updateUser = useCallback((patch: Partial<SafeUser>) => {
+    setUser((prev) => (prev ? { ...prev, ...patch } : prev));
+  }, []);
+
   return (
-    <AuthContext.Provider value={{ user, status, login, registerPatient, logout }}>{children}</AuthContext.Provider>
+    <AuthContext.Provider value={{ user, status, login, registerPatient, logout, updateUser }}>
+      {children}
+    </AuthContext.Provider>
   );
 }
 

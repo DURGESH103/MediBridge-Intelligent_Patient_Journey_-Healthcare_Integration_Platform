@@ -38,8 +38,10 @@ export function Header({ onMenuClick }: { onMenuClick: () => void }) {
         {user && (
           <div className="flex min-w-0 items-center gap-3">
             <div className="hidden max-w-48 text-right sm:block">
-              <p className="truncate text-sm font-medium text-slate-900">{user.email}</p>
-              <p className="text-xs text-slate-500">{formatRole(user.role)}</p>
+              <p className="truncate text-sm font-medium text-slate-900">{user.fullName ?? user.email}</p>
+              <p className="truncate text-xs text-slate-500">
+                {user.fullName ? user.email : formatRole(user.role)}
+              </p>
             </div>
             <Button variant="outline" size="sm" className="shrink-0" onClick={handleLogout}>
               Log out

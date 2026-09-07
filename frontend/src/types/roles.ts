@@ -3,6 +3,7 @@ export type UserRole = 'ADMIN' | 'PATIENT' | 'DOCTOR' | 'RECEPTIONIST' | 'LAB_ST
 export interface SafeUser {
   id: number;
   email: string;
+  fullName: string | null;
   role: UserRole;
   isActive: boolean;
   createdAt: string;
