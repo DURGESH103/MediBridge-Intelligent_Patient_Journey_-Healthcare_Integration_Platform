@@ -1,5 +1,5 @@
 import { consultationRepository } from './consultation.repository';
-import { Consultation, ConsultationStatus, CreatePrescriptionInput, NextStep, Prescription } from './consultation.types';
+import { Consultation, ConsultationStatus, CreatePrescriptionInput, NextStep, Prescription, PrescriptionWithContext } from './consultation.types';
 import { appointmentService } from '../appointments/appointment.service';
 import { AppointmentStatus } from '../appointments/appointment.types';
 import { labRepository } from '../laboratory/lab.repository';
@@ -34,6 +34,16 @@ export const consultationService = {
       'Consultation started',
       appointmentId
     );
+
+    // A doctor can open a consultation straight from the Consultations list
+    // without ever clicking "Call Next" on the queue board. Claim the queue
+    // slot here too so it never gets stranded at WAITING while the
+    // consultation itself moves on without it.
+    const queueEntry = await queueRepository.findByAppointmentId(appointmentId);
+    if (queueEntry && queueEntry.status === QueueStatus.WAITING) {
+      await queueService.markInProgress(queueEntry);
+    }
+
     return consultation;
   },
 
@@ -79,6 +89,10 @@ export const consultationService = {
     return consultationRepository.getPrescriptions(consultationId);
   },
 
+  async getPrescriptionsForPatient(patientId: number): Promise<PrescriptionWithContext[]> {
+    return consultationRepository.getPrescriptionsForPatient(patientId);
+  },
+
   async completeConsultation(id: number): Promise<{ consultation: Consultation; nextStep: NextStep }> {
     const consultation = await this.getConsultationById(id);
     if (consultation.status === ConsultationStatus.COMPLETED) {
@@ -94,8 +108,15 @@ export const consultationService = {
       consultation.appointmentId
     );
 
+    // Normally this is already IN_PROGRESS (via callNext or startConsultation
+    // above), but close it out from WAITING too as a last-resort safety net
+    // so a consultation can never complete while its queue entry is still
+    // stuck open.
     const queueEntry = await queueRepository.findByAppointmentId(consultation.appointmentId);
-    if (queueEntry && queueEntry.status === QueueStatus.IN_PROGRESS) {
+    if (queueEntry?.status === QueueStatus.WAITING) {
+      await queueService.markInProgress(queueEntry);
+    }
+    if (queueEntry && (queueEntry.status === QueueStatus.IN_PROGRESS || queueEntry.status === QueueStatus.WAITING)) {
       await queueService.completeEntry(queueEntry.id);
     }
 

@@ -76,13 +76,16 @@ describe('Billing', () => {
 
     const markPaid = await request(app)
       .patch(`/api/v1/billing/${record.id}/mark-paid`)
-      .set('Authorization', `Bearer ${billingStaff.token}`);
+      .set('Authorization', `Bearer ${billingStaff.token}`)
+      .send({ paymentMethod: 'CASH' });
     expect(markPaid.status).toBe(200);
     expect(markPaid.body.data.status).toBe('PAID');
+    expect(markPaid.body.data.paymentMethod).toBe('CASH');
 
     const markPaidAgain = await request(app)
       .patch(`/api/v1/billing/${record.id}/mark-paid`)
-      .set('Authorization', `Bearer ${billingStaff.token}`);
+      .set('Authorization', `Bearer ${billingStaff.token}`)
+      .send({ paymentMethod: 'CASH' });
     expect(markPaidAgain.status).toBe(400);
 
     const completed = await request(app)
@@ -111,5 +114,53 @@ describe('Billing', () => {
       .get(`/api/v1/billing/patients/${patientId}`)
       .set('Authorization', `Bearer ${stranger.token}`);
     expect(blockedOther.status).toBe(403);
+  });
+
+  it('requires a payment reference for UPI and card, but not cash, and persists it', async () => {
+    const { patientId } = await setupCompletedConsultation(120);
+    const billingStaff = await createStaffUser(UserRole.BILLING_STAFF);
+
+    const pending = await request(app)
+      .get('/api/v1/billing/pending')
+      .set('Authorization', `Bearer ${billingStaff.token}`);
+    const record = pending.body.data.find((r: { patientId: number }) => r.patientId === patientId);
+
+    const missingReference = await request(app)
+      .patch(`/api/v1/billing/${record.id}/mark-paid`)
+      .set('Authorization', `Bearer ${billingStaff.token}`)
+      .send({ paymentMethod: 'UPI' });
+    expect(missingReference.status).toBe(400);
+
+    const invalidMethod = await request(app)
+      .patch(`/api/v1/billing/${record.id}/mark-paid`)
+      .set('Authorization', `Bearer ${billingStaff.token}`)
+      .send({ paymentMethod: 'BITCOIN', paymentReference: 'whatever' });
+    expect(invalidMethod.status).toBe(400);
+
+    const paidWithUpi = await request(app)
+      .patch(`/api/v1/billing/${record.id}/mark-paid`)
+      .set('Authorization', `Bearer ${billingStaff.token}`)
+      .send({ paymentMethod: 'UPI', paymentReference: 'UPI-TXN-123456789' });
+    expect(paidWithUpi.status).toBe(200);
+    expect(paidWithUpi.body.data.paymentMethod).toBe('UPI');
+    expect(paidWithUpi.body.data.paymentReference).toBe('UPI-TXN-123456789');
+  });
+
+  it('accepts a card payment with a masked reference', async () => {
+    const { patientId } = await setupCompletedConsultation(200);
+    const billingStaff = await createStaffUser(UserRole.BILLING_STAFF);
+
+    const pending = await request(app)
+      .get('/api/v1/billing/pending')
+      .set('Authorization', `Bearer ${billingStaff.token}`);
+    const record = pending.body.data.find((r: { patientId: number }) => r.patientId === patientId);
+
+    const paidWithCard = await request(app)
+      .patch(`/api/v1/billing/${record.id}/mark-paid`)
+      .set('Authorization', `Bearer ${billingStaff.token}`)
+      .send({ paymentMethod: 'CARD', paymentReference: 'Visa •••• 4242' });
+    expect(paidWithCard.status).toBe(200);
+    expect(paidWithCard.body.data.paymentMethod).toBe('CARD');
+    expect(paidWithCard.body.data.paymentReference).toBe('Visa •••• 4242');
   });
 });

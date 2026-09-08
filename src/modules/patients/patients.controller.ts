@@ -45,4 +45,9 @@ export const patientsController = {
     const patients = await patientsService.searchPatients(q, page, pageSize);
     sendSuccess(res, 200, 'Patients retrieved successfully', patients);
   }),
+
+  countPatients: asyncHandler(async (_req: Request, res: Response) => {
+    const count = await patientsService.countPatients();
+    sendSuccess(res, 200, 'Patient count retrieved successfully', { count });
+  }),
 };

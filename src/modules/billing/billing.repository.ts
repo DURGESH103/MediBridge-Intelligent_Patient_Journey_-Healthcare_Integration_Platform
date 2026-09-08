@@ -1,6 +1,6 @@
 import { RowDataPacket, ResultSetHeader } from 'mysql2';
 import { query } from '../../config/database';
-import { BillingRecord, BillingStatus, CreateBillingRecordInput } from './billing.types';
+import { BillingRecord, BillingStatus, CreateBillingRecordInput, PaymentMethod } from './billing.types';
 
 interface BillingRow extends RowDataPacket {
   id: number;
@@ -9,6 +9,8 @@ interface BillingRow extends RowDataPacket {
   consultation_id: number;
   amount: string | null;
   status: BillingStatus;
+  payment_method: PaymentMethod | null;
+  payment_reference: string | null;
   paid_at: Date | null;
   created_at: Date;
   updated_at: Date;
@@ -22,6 +24,8 @@ function mapRow(row: BillingRow): BillingRecord {
     consultationId: row.consultation_id,
     amount: row.amount !== null ? Number(row.amount) : null,
     status: row.status,
+    paymentMethod: row.payment_method,
+    paymentReference: row.payment_reference,
     paidAt: row.paid_at,
     createdAt: row.created_at,
     updatedAt: row.updated_at,
@@ -71,8 +75,13 @@ export const billingRepository = {
     return rows.map(mapRow);
   },
 
-  async markPaid(id: number): Promise<BillingRecord | null> {
-    await query("UPDATE billing_records SET status = 'PAID', paid_at = NOW() WHERE id = :id", { id });
+  async markPaid(id: number, paymentMethod: PaymentMethod, paymentReference: string | null): Promise<BillingRecord | null> {
+    await query(
+      `UPDATE billing_records
+       SET status = 'PAID', payment_method = :paymentMethod, payment_reference = :paymentReference, paid_at = NOW()
+       WHERE id = :id`,
+      { id, paymentMethod, paymentReference }
+    );
     return this.findById(id);
   },
 };

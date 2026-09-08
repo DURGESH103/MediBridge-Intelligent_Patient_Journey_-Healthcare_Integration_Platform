@@ -43,12 +43,17 @@ export const env = {
 
   rateLimit: {
     windowMs: Number(process.env.RATE_LIMIT_WINDOW_MS ?? 900000),
-    maxRequests: Number(process.env.RATE_LIMIT_MAX_REQUESTS ?? 100),
-    // Deliberately separate from the global limit above and much tighter by
-    // default - login is a common brute-force target - but still
-    // env-configurable so the test suite (which logs in far more often than
-    // any real client would in 15 minutes) isn't throttled by its own tests.
-    loginMaxRequests: Number(process.env.LOGIN_RATE_LIMIT_MAX_REQUESTS ?? 10),
+    // Production default: 100. Development default: 500 — generous enough for
+    // manual testing across all six roles without hitting the cap mid-session.
+    maxRequests: Number(
+      process.env.RATE_LIMIT_MAX_REQUESTS ?? (process.env.NODE_ENV === 'production' ? 100 : 500)
+    ),
+    // Login-specific limiter. Production default: 10 (brute-force protection).
+    // Development default: 60 — allows ~10 sequential login attempts per role
+    // across all six roles within a single 15-minute window.
+    loginMaxRequests: Number(
+      process.env.LOGIN_RATE_LIMIT_MAX_REQUESTS ?? (process.env.NODE_ENV === 'production' ? 10 : 60)
+    ),
   },
 
   appointmentReminder: {

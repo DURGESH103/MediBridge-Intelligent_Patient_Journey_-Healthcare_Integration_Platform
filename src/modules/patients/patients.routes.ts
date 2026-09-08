@@ -32,6 +32,8 @@ router.post(
 
 router.get('/me', authorize(UserRole.PATIENT), patientsController.getMyProfile);
 
+router.get('/count', authorize(UserRole.ADMIN), patientsController.countPatients);
+
 router.get('/search', authorize(...staffRoles), validate(searchPatientsSchema), patientsController.searchPatients);
 
 router.get(

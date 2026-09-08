@@ -24,6 +24,13 @@ router.post(
   consultationController.startConsultation
 );
 
+// Must be before /:id to avoid being matched as a consultation ID.
+router.get(
+  '/prescriptions/me',
+  authorize(UserRole.PATIENT),
+  consultationController.getMyPrescriptions
+);
+
 router.get('/:id', validate(consultationIdParamSchema), consultationController.getConsultationById);
 
 router.get(

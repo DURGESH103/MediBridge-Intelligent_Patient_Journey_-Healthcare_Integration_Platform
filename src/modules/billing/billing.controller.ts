@@ -5,6 +5,7 @@ import { asyncHandler } from '../../utils/asyncHandler';
 import { sendSuccess } from '../../utils/ApiResponse';
 import { ApiError } from '../../utils/ApiError';
 import { UserRole } from '../../types/roles';
+import { PaymentMethod } from './billing.types';
 
 export const billingController = {
   listPending: asyncHandler(async (_req: Request, res: Response) => {
@@ -30,7 +31,8 @@ export const billingController = {
   }),
 
   markPaid: asyncHandler(async (req: Request, res: Response) => {
-    const record = await billingService.markPaid(Number(req.params.id));
+    const { paymentMethod, paymentReference } = req.body as { paymentMethod: PaymentMethod; paymentReference?: string };
+    const record = await billingService.markPaid(Number(req.params.id), paymentMethod, paymentReference ?? null);
     sendSuccess(res, 200, 'Billing record marked as paid', record);
   }),
 };

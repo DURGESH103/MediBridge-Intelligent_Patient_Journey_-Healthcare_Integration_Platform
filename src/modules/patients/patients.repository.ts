@@ -144,4 +144,9 @@ export const patientsRepository = {
     );
     return rows.map(mapRow);
   },
+
+  async count(): Promise<number> {
+    const rows = await query<RowDataPacket[]>('SELECT COUNT(*) AS count FROM patients', {});
+    return Number(rows[0].count);
+  },
 };

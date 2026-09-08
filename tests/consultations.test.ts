@@ -2,6 +2,60 @@ import request from 'supertest';
 import { app, registerPatient, setupCheckedInAppointment, todayUtcDateString } from './helpers';
 
 describe('Consultations', () => {
+  it("lets a patient see their own prescriptions with full context, but never another patient's", async () => {
+    const { doctor, patient, appointmentId } = await setupCheckedInAppointment();
+    const otherPatient = await registerPatient();
+
+    const start = await request(app)
+      .post('/api/v1/consultations')
+      .set('Authorization', `Bearer ${doctor.token}`)
+      .send({ appointmentId });
+    const consultationId = start.body.data.id;
+
+    await request(app)
+      .patch(`/api/v1/consultations/${consultationId}`)
+      .set('Authorization', `Bearer ${doctor.token}`)
+      .send({ diagnosis: 'Seasonal allergic rhinitis', notes: 'Advised antihistamines.' });
+
+    await request(app)
+      .post(`/api/v1/consultations/${consultationId}/prescriptions`)
+      .set('Authorization', `Bearer ${doctor.token}`)
+      .send({
+        medicineName: 'Cetirizine',
+        dosage: '10mg',
+        frequency: 'Once daily',
+        duration: '7 days',
+        instructions: 'Take at night',
+      });
+
+    await request(app)
+      .patch(`/api/v1/consultations/${consultationId}/complete`)
+      .set('Authorization', `Bearer ${doctor.token}`);
+
+    const mine = await request(app)
+      .get('/api/v1/consultations/prescriptions/me')
+      .set('Authorization', `Bearer ${patient.token}`);
+    expect(mine.status).toBe(200);
+    expect(mine.body.data).toHaveLength(1);
+    const rx = mine.body.data[0];
+    expect(rx.medicineName).toBe('Cetirizine');
+    expect(rx.dosage).toBe('10mg');
+    expect(rx.frequency).toBe('Once daily');
+    expect(rx.instructions).toBe('Take at night');
+    expect(rx.diagnosis).toBe('Seasonal allergic rhinitis');
+    expect(rx.doctorName).toBeTruthy();
+    expect(rx.doctorSpecialization).toBeTruthy();
+    expect(rx.departmentName).toBeTruthy();
+    expect(rx.patientName).toBeTruthy();
+    expect(rx.patientCode).toBeTruthy();
+
+    const someoneElses = await request(app)
+      .get('/api/v1/consultations/prescriptions/me')
+      .set('Authorization', `Bearer ${otherPatient.token}`);
+    expect(someoneElses.status).toBe(200);
+    expect(someoneElses.body.data).toHaveLength(0);
+  });
+
   it('runs the full consultation flow: start, look up by appointment, prescribe, request a lab test, complete', async () => {
     const { doctor, appointmentId } = await setupCheckedInAppointment();
 

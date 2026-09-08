@@ -37,4 +37,28 @@ export interface CreatePrescriptionInput {
   instructions?: string | null;
 }
 
+export interface PrescriptionWithContext extends Prescription {
+  // consultation context
+  consultationId: number;
+  diagnosis: string | null;
+  consultationNotes: string | null;
+  consultationStartedAt: Date | null;
+  consultationCompletedAt: Date | null;
+  appointmentId: number;
+  // doctor
+  doctorId: number;
+  doctorName: string;
+  doctorSpecialization: string;
+  doctorQualification: string | null;
+  doctorPhone: string | null;
+  departmentName: string;
+  // patient
+  patientName: string;
+  patientCode: string;
+  patientDateOfBirth: string;
+  patientGender: string;
+  patientPhone: string;
+  patientEmail: string | null;
+}
+
 export type NextStep = 'LABORATORY' | 'BILLING';

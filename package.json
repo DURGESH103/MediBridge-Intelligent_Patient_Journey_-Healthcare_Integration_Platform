@@ -9,6 +9,7 @@
     "start": "node dist/server.js",
     "db:migrate": "ts-node src/database/migrate.ts",
     "db:seed-admin": "ts-node src/database/seedAdmin.ts",
+    "db:seed-demo": "ts-node src/database/seedDemoAccounts.ts",
     "lint": "eslint \"src/**/*.ts\"",
     "typecheck": "tsc --noEmit",
     "test": "cross-env NODE_ENV=test jest --runInBand --forceExit"

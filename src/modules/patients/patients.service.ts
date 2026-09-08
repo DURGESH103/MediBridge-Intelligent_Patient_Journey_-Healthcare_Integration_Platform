@@ -60,4 +60,8 @@ export const patientsService = {
     const offset = (page - 1) * pageSize;
     return patientsRepository.search(term, pageSize, offset);
   },
+
+  async countPatients(): Promise<number> {
+    return patientsRepository.count();
+  },
 };

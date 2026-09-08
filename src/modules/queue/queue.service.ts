@@ -125,10 +125,20 @@ export const queueService = {
       throw ApiError.notFound('No patients are waiting in the queue');
     }
 
-    const updated = await queueRepository.updateStatus(next.id, QueueStatus.IN_PROGRESS, { calledAt: new Date() });
-    await broadcastQueue(doctorId, queueDate);
-    emitPatientCalled(doctorId, updated!);
+    return this.markInProgress(next);
+  },
 
+  /**
+   * Directly claims a specific WAITING entry, bypassing callNext's "pick the
+   * next one in line" / "no one else in progress" rules. Used when a doctor
+   * starts a consultation straight from the Consultations list instead of
+   * going through the queue board's Call Next button, so the queue entry
+   * still reflects that this patient is now being seen.
+   */
+  async markInProgress(entry: QueueEntry): Promise<QueueEntry> {
+    const updated = await queueRepository.updateStatus(entry.id, QueueStatus.IN_PROGRESS, { calledAt: new Date() });
+    await broadcastQueue(entry.doctorId, entry.queueDate);
+    emitPatientCalled(entry.doctorId, updated!);
     return updated!;
   },
 

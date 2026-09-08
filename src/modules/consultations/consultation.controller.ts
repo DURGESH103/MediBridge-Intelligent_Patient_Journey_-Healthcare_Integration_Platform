@@ -67,6 +67,12 @@ export const consultationController = {
     sendSuccess(res, 200, 'Prescriptions retrieved successfully', prescriptions);
   }),
 
+  getMyPrescriptions: asyncHandler(async (req: Request, res: Response) => {
+    const patient = await patientsService.getPatientByUserId(req.user!.userId);
+    const prescriptions = await consultationService.getPrescriptionsForPatient(patient.id);
+    sendSuccess(res, 200, 'Prescriptions retrieved successfully', prescriptions);
+  }),
+
   requestLabTest: asyncHandler(async (req: Request, res: Response) => {
     const existing = await consultationService.getConsultationById(Number(req.params.id));
     await assertCanAccessConsultation(req, existing);

@@ -6,7 +6,9 @@ export type JourneyStageId =
   | 'CHECK_IN'
   | 'QUEUE'
   | 'CONSULTATION'
+  | 'PRESCRIPTION'
   | 'LABORATORY'
+  | 'BILLING'
   | 'COMPLETED';
 
 export type JourneyStageStatus = 'COMPLETED' | 'CURRENT' | 'PENDING' | 'SKIPPED';

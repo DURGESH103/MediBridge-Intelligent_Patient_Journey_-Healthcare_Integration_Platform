@@ -6,6 +6,8 @@ import { consultationRepository } from '../consultations/consultation.repository
 import { ConsultationStatus } from '../consultations/consultation.types';
 import { labRepository } from '../laboratory/lab.repository';
 import { LabTestRequest, LabTestStatus } from '../laboratory/lab.types';
+import { billingRepository } from '../billing/billing.repository';
+import { BillingStatus } from '../billing/billing.types';
 import { journeyEventRepository } from './journeyEvent.repository';
 import { JourneyStage, JourneyStageId, PatientJourney } from './journey.types';
 import { ApiError } from '../../utils/ApiError';
@@ -41,6 +43,8 @@ function buildNextAction(
         : 'Please wait to be checked in.';
     case 'CONSULTATION':
       return 'Please wait to be called in for your consultation.';
+    case 'PRESCRIPTION':
+      return 'Please wait while your doctor finalizes your prescription.';
     case 'LABORATORY': {
       const pending = context.pendingLabRequest;
       if (!pending || pending.status === LabTestStatus.REQUESTED) {
@@ -48,8 +52,10 @@ function buildNextAction(
       }
       return 'Your sample is being processed. Please wait for your report to be ready.';
     }
-    case 'COMPLETED':
+    case 'BILLING':
       return 'Please proceed to billing to complete your visit.';
+    case 'COMPLETED':
+      return 'Your visit is complete.';
     default:
       return 'Please wait for further instructions.';
   }
@@ -90,17 +96,30 @@ export const journeyService = {
     const queueEntry = await queueRepository.findByAppointmentId(appointmentId);
     const consultation = await consultationRepository.findByAppointmentId(appointmentId);
     const labRequests = consultation ? await labRepository.findByConsultationId(consultation.id) : [];
+    const prescriptions = consultation ? await consultationRepository.getPrescriptions(consultation.id) : [];
+    const billingRecord = consultation ? await billingRepository.findByConsultationId(consultation.id) : null;
 
     const hasLabs = labRequests.length > 0;
     const allLabsComplete = hasLabs && labRequests.every((request) => request.status === LabTestStatus.COMPLETED);
+    const hasPrescriptions = prescriptions.length > 0;
 
     const checkInDone = Boolean(queueEntry);
-    const queueDone =
-      Boolean(queueEntry) &&
-      (queueEntry!.status === QueueStatus.IN_PROGRESS || queueEntry!.status === QueueStatus.COMPLETED);
     const consultationDone = consultation?.status === ConsultationStatus.COMPLETED;
+    // A consultation can only ever exist once the patient has actually been
+    // called in, regardless of what the queue_entries row itself says (a
+    // doctor can start a consultation straight from the Consultations list
+    // without going through Call Next first) - so "has a consultation been
+    // started" is a stronger, always-correct signal than the queue entry's
+    // own status alone. This also self-heals any appointment whose queue
+    // entry was already left stuck at WAITING by that gap before this fix.
+    const queueDone =
+      Boolean(consultation) ||
+      (Boolean(queueEntry) &&
+        (queueEntry!.status === QueueStatus.IN_PROGRESS || queueEntry!.status === QueueStatus.COMPLETED));
+    const prescriptionDone = Boolean(consultationDone) && hasPrescriptions;
     const laboratoryDone = !hasLabs || allLabsComplete;
-    const overallDone = appointment.status === AppointmentStatus.COMPLETED && laboratoryDone;
+    const billingDone = billingRecord?.status === BillingStatus.PAID;
+    const overallDone = appointment.status === AppointmentStatus.COMPLETED && laboratoryDone && billingDone;
 
     const stageDefinitions: StageDefinition[] = [
       { id: 'REGISTRATION', label: 'Registration Complete', done: true, applicable: true },
@@ -108,7 +127,9 @@ export const journeyService = {
       { id: 'CHECK_IN', label: 'Hospital Check-In', done: checkInDone, applicable: true },
       { id: 'QUEUE', label: 'Waiting for Doctor', done: queueDone, applicable: true },
       { id: 'CONSULTATION', label: 'Consultation', done: Boolean(consultationDone), applicable: true },
+      { id: 'PRESCRIPTION', label: 'Prescription', done: prescriptionDone, applicable: hasPrescriptions },
       { id: 'LABORATORY', label: 'Laboratory Test & Report', done: laboratoryDone, applicable: hasLabs },
+      { id: 'BILLING', label: 'Billing', done: billingDone, applicable: true },
       { id: 'COMPLETED', label: 'Completed', done: overallDone, applicable: true },
     ];
 

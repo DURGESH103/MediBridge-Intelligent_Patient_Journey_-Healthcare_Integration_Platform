@@ -4,7 +4,7 @@ import { validate } from '../../middleware/validate';
 import { authenticate } from '../../middleware/authenticate';
 import { authorize } from '../../middleware/authorize';
 import { UserRole } from '../../types/roles';
-import { billingIdParamSchema, billingPatientIdParamSchema } from './billing.validation';
+import { billingPatientIdParamSchema, markBillingPaidSchema } from './billing.validation';
 
 const router = Router();
 
@@ -25,7 +25,7 @@ router.get(
 router.patch(
   '/:id/mark-paid',
   authorize(...billingRoles),
-  validate(billingIdParamSchema),
+  validate(markBillingPaidSchema),
   billingController.markPaid
 );
 
