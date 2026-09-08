@@ -4,6 +4,7 @@ import { useQuery } from '@tanstack/react-query';
 import { getMyPatientProfile } from '@/lib/api/patients';
 import { listLabTestsForPatient } from '@/lib/api/laboratory';
 import { getApiErrorMessage } from '@/lib/api/client';
+import { useLabReportRealtime } from '@/lib/socket/useLabReportRealtime';
 import { PageHeader } from '@/components/layout/PageHeader';
 import { RequireRole } from '@/components/layout/RequireRole';
 import { LoadingSpinner } from '@/components/ui/LoadingSpinner';
@@ -28,6 +29,9 @@ function LabReportsPageContent() {
     queryFn: () => listLabTestsForPatient(patientId!),
     enabled: Boolean(patientId),
   });
+
+  // Automatically refresh when the backend emits lab:report-ready for this patient.
+  useLabReportRealtime(patientId);
 
   if (patientQuery.isLoading) return <LoadingSpinner />;
   if (patientQuery.isError) return <ErrorState message={getApiErrorMessage(patientQuery.error)} />;

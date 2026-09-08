@@ -8,9 +8,6 @@ import { zodResolver } from '@hookform/resolvers/zod';
 import { useAuth } from '@/lib/auth/AuthContext';
 import { getApiErrorMessage } from '@/lib/api/client';
 import { loginSchema, type LoginFormValues } from '@/lib/validation/authSchemas';
-import { Button } from '@/components/ui/Button';
-import { Input } from '@/components/ui/Input';
-import { Card } from '@/components/ui/Card';
 
 export default function LoginPage() {
   const { login } = useAuth();
@@ -35,53 +32,103 @@ export default function LoginPage() {
   }
 
   return (
-    <Card>
-      <h1 className="text-lg font-semibold text-slate-900">Sign in</h1>
-      <p className="mt-1 text-sm text-slate-500">Welcome back to MediBridge.</p>
+    <div className="space-y-6">
+      <div>
+        <h1 className="text-2xl font-bold text-slate-900 tracking-tight">Welcome back</h1>
+        <p className="mt-1.5 text-sm text-slate-500">Sign in to your MediBridge account.</p>
+      </div>
 
-      <form onSubmit={handleSubmit(onSubmit)} className="mt-6 flex flex-col gap-4" noValidate>
-        <Input
-          label="Email"
-          type="email"
-          autoComplete="email"
-          error={errors.email?.message}
-          {...register('email')}
-        />
-
-        <div className="relative">
-          <Input
-            label="Password"
-            type={showPassword ? 'text' : 'password'}
-            autoComplete="current-password"
-            error={errors.password?.message}
-            {...register('password')}
+      <form onSubmit={handleSubmit(onSubmit)} className="space-y-4" noValidate>
+        {/* Email */}
+        <div className="space-y-1.5">
+          <label htmlFor="email" className="block text-sm font-medium text-slate-700">
+            Email address
+          </label>
+          <input
+            id="email"
+            type="email"
+            autoComplete="email"
+            placeholder="you@example.com"
+            aria-invalid={Boolean(errors.email)}
+            className={`w-full rounded-xl border px-4 py-2.5 text-sm text-slate-900 placeholder:text-slate-400 bg-white transition-colors focus:outline-none focus:ring-2 focus:ring-teal-500 focus:border-teal-500 ${
+              errors.email ? 'border-red-400' : 'border-slate-300 hover:border-slate-400'
+            }`}
+            {...register('email')}
           />
-          <button
-            type="button"
-            onClick={() => setShowPassword((v) => !v)}
-            className="absolute right-3 top-8 text-xs font-medium text-slate-500 hover:text-slate-700"
-          >
-            {showPassword ? 'Hide' : 'Show'}
-          </button>
+          {errors.email && (
+            <p className="text-xs text-red-600">{errors.email.message}</p>
+          )}
         </div>
 
+        {/* Password */}
+        <div className="space-y-1.5">
+          <label htmlFor="password" className="block text-sm font-medium text-slate-700">
+            Password
+          </label>
+          <div className="relative">
+            <input
+              id="password"
+              type={showPassword ? 'text' : 'password'}
+              autoComplete="current-password"
+              placeholder="••••••••"
+              aria-invalid={Boolean(errors.password)}
+              className={`w-full rounded-xl border px-4 py-2.5 pr-16 text-sm text-slate-900 placeholder:text-slate-400 bg-white transition-colors focus:outline-none focus:ring-2 focus:ring-teal-500 focus:border-teal-500 ${
+                errors.password ? 'border-red-400' : 'border-slate-300 hover:border-slate-400'
+              }`}
+              {...register('password')}
+            />
+            <button
+              type="button"
+              onClick={() => setShowPassword((v) => !v)}
+              className="absolute right-3 top-1/2 -translate-y-1/2 text-xs font-semibold text-slate-500 hover:text-teal-700 transition-colors px-1 py-0.5"
+            >
+              {showPassword ? 'Hide' : 'Show'}
+            </button>
+          </div>
+          {errors.password && (
+            <p className="text-xs text-red-600">{errors.password.message}</p>
+          )}
+        </div>
+
+        {/* API error */}
         {apiError && (
-          <p role="alert" className="rounded-md bg-red-50 px-3 py-2 text-sm text-red-700">
-            {apiError}
-          </p>
+          <div
+            role="alert"
+            className="flex items-start gap-2.5 rounded-xl bg-red-50 border border-red-200 px-4 py-3"
+          >
+            <svg className="h-4 w-4 text-red-500 mt-0.5 flex-shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+            </svg>
+            <p className="text-sm text-red-700">{apiError}</p>
+          </div>
         )}
 
-        <Button type="submit" isLoading={isSubmitting} className="mt-2 w-full">
-          Sign in
-        </Button>
+        {/* Submit */}
+        <button
+          type="submit"
+          disabled={isSubmitting}
+          className="w-full flex items-center justify-center gap-2 rounded-xl bg-teal-600 hover:bg-teal-700 disabled:opacity-60 disabled:cursor-not-allowed px-4 py-2.5 text-sm font-semibold text-white shadow-sm transition-colors mt-2"
+        >
+          {isSubmitting ? (
+            <>
+              <svg className="h-4 w-4 animate-spin" viewBox="0 0 24 24" fill="none" aria-hidden="true">
+                <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" />
+                <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8v4a4 4 0 00-4 4H4z" />
+              </svg>
+              Signing in…
+            </>
+          ) : (
+            'Sign in'
+          )}
+        </button>
       </form>
 
-      <p className="mt-6 text-center text-sm text-slate-500">
+      <p className="text-center text-sm text-slate-500">
         New patient?{' '}
-        <Link href="/register" className="font-medium text-brand-600 hover:text-brand-700">
+        <Link href="/register" className="font-semibold text-teal-600 hover:text-teal-700 transition-colors">
           Create an account
         </Link>
       </p>
-    </Card>
+    </div>
   );
 }

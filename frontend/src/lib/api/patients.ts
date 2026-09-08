@@ -41,3 +41,8 @@ export async function searchPatients(query: string, page = 1, pageSize = 20): Pr
   });
   return res.data.data;
 }
+
+export async function getPatientCount(): Promise<number> {
+  const res = await apiClient.get<ApiSuccess<{ count: number }>>('/patients/count');
+  return res.data.data.count;
+}

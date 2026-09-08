@@ -17,7 +17,7 @@ const PAGE_SIZE = 20;
 
 export default function NotificationsPage() {
   return (
-    <RequireRole roles={['PATIENT']}>
+    <RequireRole roles={['PATIENT', 'DOCTOR', 'RECEPTIONIST', 'LAB_STAFF', 'BILLING_STAFF', 'ADMIN']}>
       <NotificationsPageContent />
     </RequireRole>
   );

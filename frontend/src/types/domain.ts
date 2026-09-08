@@ -157,7 +157,9 @@ export type JourneyStageId =
   | 'CHECK_IN'
   | 'QUEUE'
   | 'CONSULTATION'
+  | 'PRESCRIPTION'
   | 'LABORATORY'
+  | 'BILLING'
   | 'COMPLETED';
 export type JourneyStageStatus = 'COMPLETED' | 'CURRENT' | 'PENDING' | 'SKIPPED';
 export type OverallJourneyStatus = 'IN_PROGRESS' | 'COMPLETED' | 'CANCELLED' | 'NO_SHOW';
@@ -188,6 +190,7 @@ export interface PatientJourney {
 }
 
 export type BillingStatus = 'PENDING' | 'PAID';
+export type PaymentMethod = 'CASH' | 'UPI' | 'CARD';
 
 export interface BillingRecord {
   id: number;
@@ -196,6 +199,8 @@ export interface BillingRecord {
   consultationId: number;
   amount: number | null;
   status: BillingStatus;
+  paymentMethod: PaymentMethod | null;
+  paymentReference: string | null;
   paidAt: string | null;
   createdAt: string;
   updatedAt: string;

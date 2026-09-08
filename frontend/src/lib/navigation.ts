@@ -14,7 +14,9 @@ export const NAV_ITEMS_BY_ROLE: Record<UserRole, NavItem[]> = {
     { label: 'My Journey', href: '/journey' },
     { label: 'Appointments', href: '/appointments' },
     { label: 'Queue Status', href: '/queue' },
+    { label: 'Prescriptions', href: '/my-prescriptions' },
     { label: 'Lab Reports', href: '/lab-reports' },
+    { label: 'My Billing', href: '/my-billing' },
     { label: 'Notifications', href: '/notifications' },
     { label: 'Profile', href: '/profile' },
   ],
@@ -23,6 +25,7 @@ export const NAV_ITEMS_BY_ROLE: Record<UserRole, NavItem[]> = {
     { label: 'Queue', href: '/queue' },
     { label: 'Consultations', href: '/consultations' },
     { label: 'Availability', href: '/availability' },
+    { label: 'Notifications', href: '/notifications' },
     { label: 'Profile', href: '/profile' },
   ],
   RECEPTIONIST: [
@@ -31,16 +34,19 @@ export const NAV_ITEMS_BY_ROLE: Record<UserRole, NavItem[]> = {
     { label: 'Appointments', href: '/appointments' },
     { label: 'Check-In', href: '/check-in' },
     { label: 'Queue', href: '/queue' },
+    { label: 'Notifications', href: '/notifications' },
     { label: 'Profile', href: '/profile' },
   ],
   LAB_STAFF: [
     { label: 'Dashboard', href: '/' },
     { label: 'Lab Queue', href: '/lab' },
+    { label: 'Notifications', href: '/notifications' },
     { label: 'Profile', href: '/profile' },
   ],
   BILLING_STAFF: [
     { label: 'Dashboard', href: '/' },
     { label: 'Billing', href: '/billing' },
+    { label: 'Notifications', href: '/notifications' },
     { label: 'Profile', href: '/profile' },
   ],
   ADMIN: [
@@ -49,6 +55,7 @@ export const NAV_ITEMS_BY_ROLE: Record<UserRole, NavItem[]> = {
     { label: 'Doctors', href: '/doctors' },
     { label: 'Staff Users', href: '/users' },
     { label: 'Patients', href: '/patients' },
+    { label: 'Notifications', href: '/notifications' },
     { label: 'Profile', href: '/profile' },
   ],
 };

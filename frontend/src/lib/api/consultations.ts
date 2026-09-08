@@ -33,6 +33,34 @@ export interface AddPrescriptionPayload {
   instructions?: string | null;
 }
 
+export interface PrescriptionWithContext extends Prescription {
+  // consultation context
+  diagnosis: string | null;
+  consultationNotes: string | null;
+  consultationStartedAt: string | null;
+  consultationCompletedAt: string | null;
+  appointmentId: number;
+  // doctor
+  doctorId: number;
+  doctorName: string;
+  doctorSpecialization: string;
+  doctorQualification: string | null;
+  doctorPhone: string | null;
+  departmentName: string;
+  // patient
+  patientName: string;
+  patientCode: string;
+  patientDateOfBirth: string;
+  patientGender: string;
+  patientPhone: string;
+  patientEmail: string | null;
+}
+
+export async function getMyPrescriptions(): Promise<PrescriptionWithContext[]> {
+  const res = await apiClient.get<ApiSuccess<PrescriptionWithContext[]>>('/consultations/prescriptions/me');
+  return res.data.data;
+}
+
 export async function addPrescription(consultationId: number, payload: AddPrescriptionPayload): Promise<Prescription> {
   const res = await apiClient.post<ApiSuccess<Prescription>>(`/consultations/${consultationId}/prescriptions`, payload);
   return res.data.data;

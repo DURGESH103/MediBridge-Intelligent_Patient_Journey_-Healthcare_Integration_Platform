@@ -8,8 +8,10 @@ import {
   confirmAppointment,
   getAppointmentById,
   getAvailableSlots,
+  markNoShow,
   rescheduleAppointment,
 } from '@/lib/api/appointments';
+import { checkIn } from '@/lib/api/queue';
 import { getDoctorById } from '@/lib/api/doctors';
 import { getPatientById } from '@/lib/api/patients';
 import { getApiErrorMessage } from '@/lib/api/client';
@@ -35,6 +37,7 @@ export default function AppointmentDetailPage() {
 }
 
 const ACTIONABLE_STATUSES = new Set(['SCHEDULED', 'CONFIRMED']);
+const CHECK_IN_STATUSES = new Set(['SCHEDULED', 'CONFIRMED']);
 
 function AppointmentDetailPageContent() {
   const { id } = useParams<{ id: string }>();
@@ -47,6 +50,8 @@ function AppointmentDetailPageContent() {
   const [isRescheduling, setIsRescheduling] = useState(false);
   const [rescheduleDate, setRescheduleDate] = useState(todayDateString());
   const [rescheduleSlot, setRescheduleSlot] = useState<string | null>(null);
+  const [checkInToken, setCheckInToken] = useState<number | null>(null);
+  const [showNoShowConfirm, setShowNoShowConfirm] = useState(false);
 
   const appointmentQuery = useQuery({
     queryKey: ['appointments', appointmentId],
@@ -99,12 +104,45 @@ function AppointmentDetailPageContent() {
     onError: (error) => setApiError(getApiErrorMessage(error)),
   });
 
+  const checkInMutation = useMutation({
+    mutationFn: () => checkIn(appointmentId),
+    onSuccess: (entry) => {
+      setCheckInToken(entry.tokenNumber);
+      invalidateAppointment();
+      queryClient.invalidateQueries({ queryKey: ['queue'] });
+      queryClient.invalidateQueries({ queryKey: ['journey'] });
+    },
+    onError: (error) => setApiError(getApiErrorMessage(error)),
+  });
+
+  const noShowMutation = useMutation({
+    mutationFn: () => markNoShow(appointmentId),
+    onSuccess: () => {
+      setShowNoShowConfirm(false);
+      invalidateAppointment();
+      queryClient.invalidateQueries({ queryKey: ['journey'] });
+    },
+    onError: (error) => {
+      setShowNoShowConfirm(false);
+      setApiError(getApiErrorMessage(error));
+    },
+  });
+
   if (appointmentQuery.isLoading) return <LoadingSpinner />;
   if (appointmentQuery.isError) return <ErrorState message={getApiErrorMessage(appointmentQuery.error)} />;
   if (!appointmentQuery.data) return null;
 
   const appointment = appointmentQuery.data;
   const canAct = ACTIONABLE_STATUSES.has(appointment.status);
+  const appointmentDate = appointment.scheduledAt.slice(0, 10);
+  const isToday = appointmentDate === todayDateString();
+  const canCheckIn =
+    user?.role === 'PATIENT' &&
+    CHECK_IN_STATUSES.has(appointment.status) &&
+    isToday;
+  const canMarkNoShow =
+    (user?.role === 'DOCTOR' || user?.role === 'RECEPTIONIST' || user?.role === 'ADMIN') &&
+    ACTIONABLE_STATUSES.has(appointment.status);
 
   return (
     <>
@@ -140,6 +178,27 @@ function AppointmentDetailPageContent() {
 
         {apiError && <p className="text-sm text-red-600">{apiError}</p>}
 
+        {checkInToken !== null && (
+          <Card className="border-emerald-200 bg-emerald-50 text-center">
+            <p className="text-sm font-medium text-emerald-800">Checked in successfully!</p>
+            <p className="mt-1 text-3xl font-bold text-emerald-900">Token #{checkInToken}</p>
+            <p className="mt-1 text-xs text-emerald-700">Please wait to be called.</p>
+          </Card>
+        )}
+
+        {canCheckIn && checkInToken === null && (
+          <Card>
+            <p className="text-sm text-slate-600">Your appointment is today. Check in to join the queue.</p>
+            <Button
+              className="mt-3"
+              isLoading={checkInMutation.isPending}
+              onClick={() => { setApiError(null); checkInMutation.mutate(); }}
+            >
+              Check In
+            </Button>
+          </Card>
+        )}
+
         {canAct && !isRescheduling && (
           <div className="flex flex-wrap gap-3">
             {user?.role === 'RECEPTIONIST' && appointment.status === 'SCHEDULED' && (
@@ -157,7 +216,43 @@ function AppointmentDetailPageContent() {
             >
               Cancel Appointment
             </Button>
+            {canMarkNoShow && (
+              <Button
+                variant="outline"
+                onClick={() => { setApiError(null); setShowNoShowConfirm(true); }}
+              >
+                Mark as No-Show
+              </Button>
+            )}
           </div>
+        )}
+
+        {showNoShowConfirm && (
+          <Card className="border-amber-200 bg-amber-50">
+            <p className="text-sm font-medium text-amber-900">
+              Mark this appointment as no-show?
+            </p>
+            <p className="mt-1 text-xs text-amber-700">
+              This cannot be undone. The patient will be recorded as having not attended.
+            </p>
+            <div className="mt-3 flex gap-3">
+              <Button
+                size="sm"
+                variant="danger"
+                isLoading={noShowMutation.isPending}
+                onClick={() => noShowMutation.mutate()}
+              >
+                Confirm No-Show
+              </Button>
+              <Button
+                size="sm"
+                variant="ghost"
+                onClick={() => setShowNoShowConfirm(false)}
+              >
+                Cancel
+              </Button>
+            </div>
+          </Card>
         )}
 
         {isRescheduling && (
